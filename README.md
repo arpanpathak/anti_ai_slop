@@ -30,6 +30,47 @@ python3 skills/anti-ai-slop-writing-for-neurodivergent/scripts/slop_audit.py cha
 pip install lizard && lizard -C 2 -w src/
 ```
 
+## Anti AI Slopfication with a Harness
+
+![System design of the harness: the task goes to a local model, the answer is saved and checked,
+and each failure goes back to the model.](harness/assets/system-design.svg)
+
+![Entity diagram of the harness: struct Harness steps through enum State, and struct Answer
+carries one reply from parse to report.](harness/assets/entities.svg)
+
+`harness/` is a command-line tool in Rust, under 200 lines. We give it a task in plain English.
+It sends our task to a local model, with `keep-it-simple-code` as its system prompt. Then it
+saves the model's program and runs the model's check command. When a check fails, the harness
+sends back the compiler error or program output and asks again, for up to 5 attempts. Each
+program must assert its own result, so a wrong answer fails its check too.
+
+```sh
+cd harness
+API_KEY=... cargo run --release -- write a parallel sum algorithm using multiple CPU cores
+```
+
+The program lands in `harness_out/`. The model server and model name are the `URL` and `MODEL`
+constants at the top of `src/main.rs`. The model chooses the check command, and the harness
+runs it as the current user, so run it in a folder where that is safe.
+
+We wrote the loop as a state machine with one `State` enum and one `match`.
+
+```rust
+enum State { Ask, Check(String), Fix(Error), Pass, GiveUp }
+```
+
+| Measure | Value |
+|---|---|
+| Lines in `src/main.rs` | 197 |
+| Average cyclomatic complexity (`lizard`) | 2.5 |
+| Unit tests | 9 |
+| Line coverage (`cargo llvm-cov`) | 91.11%: every function except `main` |
+
+`main` reads `API_KEY` and the command line, so unit tests do not run it. The tests of `run`
+use a fake model server on localhost. `lizard` counts each `?` as a decision, so `main` and
+`send`, which are straight lines of `?`, score 4, and `run`, the dispatch `match`, scores 5.
+Every other function scores 1 or 2.
+
 ## Sources
 
 `sources/` holds the original guides the skills were built from, unchanged. The skills also

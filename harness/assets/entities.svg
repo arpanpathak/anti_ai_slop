@@ -1,0 +1,107 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 600" width="1200" height="600" role="img" aria-label="Entity diagram of the harness. struct Harness holds url, api_key, conversation and attempt, and its run method steps through enum State: Ask, Check with the model's reply, Fix with the failure, Pass and GiveUp. In the Check state the reply is parsed into struct Answer, with file_name, code and check, which is saved, run, and passed to report. The constants are URL, MODEL, MAX_ATTEMPTS of 5, WORK_DIR of harness_out, SKILL and FORMAT.">
+<defs>
+  <filter id="shadow" x="-10%" y="-10%" width="120%" height="130%">
+    <feDropShadow dx="0" dy="1" stdDeviation="1" flood-color="#1f2937" flood-opacity="0.14"/>
+    <feDropShadow dx="0" dy="4" stdDeviation="7" flood-color="#1f2937" flood-opacity="0.10"/>
+  </filter>
+  <clipPath id="harness-card"><rect x="32" y="100" width="360" height="330" rx="14"/></clipPath>
+  <clipPath id="state-card"><rect x="472" y="100" width="300" height="250" rx="14"/></clipPath>
+  <clipPath id="answer-card"><rect x="852" y="100" width="316" height="264" rx="14"/></clipPath>
+  <clipPath id="report-card"><rect x="852" y="400" width="316" height="130" rx="14"/></clipPath>
+  <clipPath id="const-card"><rect x="472" y="400" width="300" height="174" rx="14"/></clipPath>
+  <marker id="head" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="10" markerHeight="10" markerUnits="userSpaceOnUse" orient="auto">
+    <path d="M0,0 L10,5 L0,10 L3,5 Z" fill="#5f6368"/>
+  </marker>
+</defs>
+
+<style>
+  .title { font: 700 22px Roboto, "Helvetica Neue", Arial, sans-serif; fill: #202124; }
+  .lede { font: 400 14px Roboto, "Helvetica Neue", Arial, sans-serif; fill: #5f6368; }
+  .kind { font: 500 12px "JetBrains Mono", "SF Mono", Menlo, monospace; }
+  .name { font: 700 16px "JetBrains Mono", "SF Mono", Menlo, monospace; fill: #202124; }
+  .row { font: 500 13px "JetBrains Mono", "SF Mono", Menlo, monospace; fill: #202124; }
+  .type { font: 400 13px "JetBrains Mono", "SF Mono", Menlo, monospace; fill: #1a73e8; }
+  .note { font: 400 12px Roboto, "Helvetica Neue", Arial, sans-serif; fill: #5f6368; }
+  .section { font: 700 11px Roboto, "Helvetica Neue", Arial, sans-serif; fill: #80868b; letter-spacing: 0.08em; }
+  .edge { font: 500 12px Roboto, "Helvetica Neue", Arial, sans-serif; fill: #5f6368; }
+</style>
+
+<rect width="1200" height="600" fill="#f6f8fb"/>
+<text x="32" y="44" class="title">Harness: entities</text>
+<text x="32" y="68" class="lede">Two structs, one enum and one function. Harness drives the states, and Answer carries one reply from parse to report.</text>
+
+<!-- struct Harness -->
+<rect x="32" y="100" width="360" height="330" rx="14" fill="#ffffff" filter="url(#shadow)"/>
+<rect x="32" y="100" width="360" height="52" fill="#e8f0fe" clip-path="url(#harness-card)"/>
+<text x="52" y="122" class="kind" fill="#174ea6">struct</text>
+<text x="52" y="142" class="name">Harness</text>
+<text x="52" y="178" class="section">FIELDS</text>
+<text x="52" y="202" class="row">url</text><text x="196" y="202" class="type">String</text>
+<text x="52" y="224" class="row">api_key</text><text x="196" y="224" class="type">String</text>
+<text x="52" y="246" class="row">conversation</text><text x="196" y="246" class="type">Vec&lt;Value&gt;</text>
+<text x="52" y="268" class="row">attempt</text><text x="196" y="268" class="type">u32</text>
+<line x1="52" y1="284" x2="372" y2="284" stroke="#e8eaed" stroke-width="1.5"/>
+<text x="52" y="306" class="section">METHODS</text>
+<text x="52" y="330" class="row">run()</text><text x="196" y="330" class="type">Result&lt;()&gt;</text>
+<text x="52" y="352" class="row">ask()</text><text x="196" y="352" class="type">State</text>
+<text x="52" y="374" class="row">check(reply)</text><text x="196" y="374" class="type">State</text>
+<text x="52" y="396" class="row">fix(&amp;failure)</text><text x="196" y="396" class="type">State</text>
+<text x="52" y="418" class="row">send()</text><text x="196" y="418" class="type">Result&lt;String&gt;</text>
+
+<!-- enum State -->
+<rect x="472" y="100" width="300" height="250" rx="14" fill="#ffffff" filter="url(#shadow)"/>
+<rect x="472" y="100" width="300" height="52" fill="#fef7e0" clip-path="url(#state-card)"/>
+<text x="492" y="122" class="kind" fill="#8a4b00">enum</text>
+<text x="492" y="142" class="name">State</text>
+<text x="492" y="178" class="section">VARIANTS</text>
+<text x="492" y="204" class="row">Ask</text><text x="752" y="204" class="note" text-anchor="end">ask the model</text>
+<text x="492" y="232" class="row">Check(String)</text><text x="752" y="232" class="note" text-anchor="end">the model's reply</text>
+<text x="492" y="260" class="row">Fix(Error)</text><text x="752" y="260" class="note" text-anchor="end">the failure</text>
+<text x="492" y="288" class="row">Pass</text><text x="752" y="288" class="note" text-anchor="end">the check passed</text>
+<text x="492" y="316" class="row">GiveUp</text><text x="752" y="316" class="note" text-anchor="end">5 attempts failed</text>
+
+<!-- struct Answer -->
+<rect x="852" y="100" width="316" height="264" rx="14" fill="#ffffff" filter="url(#shadow)"/>
+<rect x="852" y="100" width="316" height="52" fill="#e6f4ea" clip-path="url(#answer-card)"/>
+<text x="872" y="122" class="kind" fill="#0d652d">struct · Deserialize</text>
+<text x="872" y="142" class="name">Answer</text>
+<text x="872" y="178" class="section">FIELDS</text>
+<text x="872" y="202" class="row">file_name</text><text x="1000" y="202" class="type">String</text>
+<text x="872" y="224" class="row">code</text><text x="1000" y="224" class="type">String</text>
+<text x="872" y="246" class="row">check</text><text x="1000" y="246" class="type">String</text>
+<line x1="872" y1="262" x2="1148" y2="262" stroke="#e8eaed" stroke-width="1.5"/>
+<text x="872" y="284" class="section">METHODS</text>
+<text x="872" y="306" class="row">parse(&amp;str)</text><text x="1000" y="306" class="type">Result&lt;Answer&gt;</text>
+<text x="872" y="326" class="row">save(self)</text><text x="1000" y="326" class="type">Result&lt;Answer&gt;</text>
+<text x="872" y="346" class="row">run(self)</text><text x="1000" y="346" class="type">Result&lt;Output&gt;</text>
+
+<!-- fn report -->
+<rect x="852" y="400" width="316" height="130" rx="14" fill="#ffffff" filter="url(#shadow)"/>
+<rect x="852" y="400" width="316" height="52" fill="#fce8e6" clip-path="url(#report-card)"/>
+<text x="872" y="422" class="kind" fill="#a50e0e">fn</text>
+<text x="872" y="442" class="name">report</text>
+<text x="872" y="478" class="row">report(Output)</text><text x="1000" y="478" class="type">Result&lt;()&gt;</text>
+<text x="872" y="502" class="note">Reads the output as UTF-8 and fails</text>
+<text x="872" y="518" class="note">when the check exits non-zero.</text>
+
+<!-- constants -->
+<rect x="472" y="400" width="300" height="174" rx="14" fill="#ffffff" filter="url(#shadow)"/>
+<rect x="472" y="400" width="300" height="52" fill="#f3e8fd" clip-path="url(#const-card)"/>
+<text x="492" y="422" class="kind" fill="#8430ce">const</text>
+<text x="492" y="442" class="name">constants</text>
+<text x="492" y="478" class="row">URL</text><text x="752" y="478" class="note" text-anchor="end">model server</text>
+<text x="492" y="500" class="row">MODEL</text><text x="752" y="500" class="note" text-anchor="end">model name</text>
+<text x="492" y="522" class="row">MAX_ATTEMPTS</text><text x="752" y="522" class="note" text-anchor="end">5</text>
+<text x="492" y="544" class="row">WORK_DIR</text><text x="752" y="544" class="note" text-anchor="end">harness_out</text>
+<text x="492" y="566" class="row">SKILL, FORMAT</text><text x="752" y="566" class="note" text-anchor="end">system prompt</text>
+
+<!-- relationships -->
+<line x1="394" y1="210" x2="468" y2="210" stroke="#5f6368" stroke-width="2" stroke-linecap="butt" marker-end="url(#head)"/>
+<text x="431" y="200" class="edge" text-anchor="middle">steps</text>
+<line x1="774" y1="232" x2="848" y2="232" stroke="#5f6368" stroke-width="2" stroke-linecap="butt" marker-end="url(#head)"/>
+<text x="811" y="222" class="edge" text-anchor="middle">parse</text>
+<line x1="1010" y1="366" x2="1010" y2="396" stroke="#5f6368" stroke-width="2" stroke-linecap="butt" marker-end="url(#head)"/>
+<text x="1018" y="386" class="edge">run</text>
+<path d="M212,432 V486 H468" stroke="#5f6368" stroke-width="2" fill="none" stroke-linecap="butt" marker-end="url(#head)"/>
+<text x="340" y="478" class="edge" text-anchor="middle">uses</text>
+</svg>

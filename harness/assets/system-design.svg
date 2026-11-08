@@ -1,0 +1,125 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 570" width="1200" height="570" role="img" aria-label="System design of the harness. You run harness with a task in English. The harness sends the task and the keep-it-simple-code skill to a local model through any OpenAI-compatible API. The model answers with JSON holding a file name, code and a check command. The harness saves the code in harness_out, runs the check, and moves through the states Ask, Check, Fix, Pass and Give up. A failed check goes back to the model, for up to 5 attempts.">
+<defs>
+  <filter id="shadow" x="-10%" y="-10%" width="120%" height="140%">
+    <feDropShadow dx="0" dy="1" stdDeviation="1" flood-color="#1f2937" flood-opacity="0.14"/>
+    <feDropShadow dx="0" dy="4" stdDeviation="7" flood-color="#1f2937" flood-opacity="0.10"/>
+  </filter>
+  <marker id="head" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="10" markerHeight="10" markerUnits="userSpaceOnUse" orient="auto">
+    <path d="M0,0 L10,5 L0,10 L3,5 Z" fill="#5f6368"/>
+  </marker>
+  <marker id="head-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="10" markerHeight="10" markerUnits="userSpaceOnUse" orient="auto">
+    <path d="M0,0 L10,5 L0,10 L3,5 Z" fill="#1a73e8"/>
+  </marker>
+  <marker id="head-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="10" markerHeight="10" markerUnits="userSpaceOnUse" orient="auto">
+    <path d="M0,0 L10,5 L0,10 L3,5 Z" fill="#c5221f"/>
+  </marker>
+</defs>
+
+<style>
+  .title { font: 700 22px Roboto, "Helvetica Neue", Arial, sans-serif; fill: #202124; }
+  .lede { font: 400 14px Roboto, "Helvetica Neue", Arial, sans-serif; fill: #5f6368; }
+  .card-title { font: 700 16px Roboto, "Helvetica Neue", Arial, sans-serif; fill: #202124; }
+  .body { font: 400 13px Roboto, "Helvetica Neue", Arial, sans-serif; fill: #3c4043; }
+  .muted { font: 400 12px Roboto, "Helvetica Neue", Arial, sans-serif; fill: #5f6368; }
+  .mono { font: 500 12.5px "JetBrains Mono", "SF Mono", Menlo, monospace; fill: #202124; }
+  .chip { font: 700 13px Roboto, "Helvetica Neue", Arial, sans-serif; }
+  .edge { font: 500 12px Roboto, "Helvetica Neue", Arial, sans-serif; fill: #5f6368; }
+</style>
+
+<rect width="1200" height="570" fill="#f6f8fb"/>
+<text x="32" y="44" class="title">Harness: system design</text>
+<text x="32" y="68" class="lede">One run asks the model for a program, checks it, and sends every failure back until the check passes.</text>
+
+<!-- You -->
+<rect x="32" y="196" width="210" height="170" rx="14" fill="#ffffff" filter="url(#shadow)"/>
+<circle cx="64" cy="228" r="17" fill="#e8f0fe"/>
+<rect x="54" y="220" width="20" height="16" rx="3" fill="none" stroke="#1a73e8" stroke-width="2"/>
+<path d="M58,225 l4,3 l-4,3 M64,232 h5" stroke="#1a73e8" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+<text x="92" y="234" class="card-title">You</text>
+<text x="50" y="274" class="mono">$ harness write a</text>
+<text x="50" y="294" class="mono">  parallel sum algorithm</text>
+<text x="50" y="314" class="mono">  using multiple CPU cores</text>
+<text x="50" y="344" class="muted">API_KEY set in the shell</text>
+
+<!-- Harness -->
+<rect x="330" y="104" width="476" height="316" rx="14" fill="#ffffff" filter="url(#shadow)"/>
+<circle cx="362" cy="136" r="17" fill="#e8f0fe"/>
+<circle cx="362" cy="136" r="7" fill="none" stroke="#1a73e8" stroke-width="2.2"/>
+<path d="M362,124 v4 M362,144 v4 M350,136 h4 M370,136 h4 M353.5,127.5 l2.8,2.8 M367.7,141.7 l2.8,2.8 M353.5,144.5 l2.8,-2.8 M367.7,130.3 l2.8,-2.8" stroke="#1a73e8" stroke-width="2.2" stroke-linecap="round"/>
+<text x="390" y="142" class="card-title">Harness</text>
+<text x="786" y="142" class="muted" text-anchor="end">src/main.rs · 197 lines</text>
+
+<rect x="356" y="180" width="96" height="40" rx="10" fill="#e8f0fe"/>
+<text x="404" y="205" class="chip" fill="#174ea6" text-anchor="middle">ASK</text>
+<rect x="508" y="180" width="104" height="40" rx="10" fill="#fef7e0"/>
+<text x="560" y="205" class="chip" fill="#8a4b00" text-anchor="middle">CHECK</text>
+<rect x="668" y="180" width="112" height="40" rx="10" fill="#e6f4ea"/>
+<text x="724" y="205" class="chip" fill="#0d652d" text-anchor="middle">PASS</text>
+<rect x="508" y="282" width="104" height="40" rx="10" fill="#fce8e6"/>
+<text x="560" y="307" class="chip" fill="#a50e0e" text-anchor="middle">FIX</text>
+<rect x="668" y="282" width="112" height="40" rx="10" fill="#f1f3f4"/>
+<text x="724" y="307" class="chip" fill="#3c4043" text-anchor="middle">GIVE UP</text>
+
+<line x1="454" y1="200" x2="504" y2="200" stroke="#5f6368" stroke-width="2" stroke-linecap="butt" marker-end="url(#head)"/>
+<line x1="614" y1="200" x2="664" y2="200" stroke="#5f6368" stroke-width="2" stroke-linecap="butt" marker-end="url(#head)"/>
+<text x="639" y="191" class="edge" text-anchor="middle">ok</text>
+<line x1="560" y1="222" x2="560" y2="278" stroke="#c5221f" stroke-width="2" stroke-linecap="butt" marker-end="url(#head-red)"/>
+<text x="568" y="255" class="edge">fails</text>
+<path d="M506,302 H404 V224" stroke="#5f6368" stroke-width="2" fill="none" stroke-linecap="butt" marker-end="url(#head)"/>
+<text x="455" y="320" class="edge" text-anchor="middle">attempt &lt; 5</text>
+<line x1="614" y1="302" x2="664" y2="302" stroke="#5f6368" stroke-width="2" stroke-linecap="butt" marker-end="url(#head)"/>
+<text x="639" y="340" class="edge" text-anchor="middle">attempt = 5</text>
+
+<line x1="356" y1="362" x2="780" y2="362" stroke="#e8eaed" stroke-width="1.5"/>
+<text x="356" y="386" class="muted">The conversation keeps the system prompt, the task, and every reply and failure.</text>
+<text x="356" y="406" class="muted">The system prompt is the keep-it-simple-code skill plus the JSON format.</text>
+
+<!-- Model -->
+<rect x="906" y="104" width="262" height="176" rx="14" fill="#ffffff" filter="url(#shadow)"/>
+<circle cx="938" cy="136" r="17" fill="#f3e8fd"/>
+<rect x="929" y="126" width="18" height="7" rx="2" fill="none" stroke="#8430ce" stroke-width="2"/>
+<rect x="929" y="137" width="18" height="7" rx="2" fill="none" stroke="#8430ce" stroke-width="2"/>
+<circle cx="933" cy="129.5" r="1.2" fill="#8430ce"/><circle cx="933" cy="140.5" r="1.2" fill="#8430ce"/>
+<text x="966" y="142" class="card-title">Local model</text>
+<text x="924" y="186" class="mono">POST /v1/chat/completions</text>
+<text x="924" y="212" class="body">Any OpenAI-compatible</text>
+<text x="924" y="234" class="body">chat server</text>
+<text x="924" y="260" class="muted">URL and MODEL in src/main.rs</text>
+
+<line x1="808" y1="170" x2="902" y2="170" stroke="#1a73e8" stroke-width="2" stroke-linecap="butt" marker-end="url(#head-blue)"/>
+<text x="855" y="160" class="edge" text-anchor="middle">messages</text>
+<line x1="902" y1="230" x2="812" y2="230" stroke="#5f6368" stroke-width="2" stroke-linecap="butt" marker-end="url(#head)"/>
+<text x="857" y="250" class="edge" text-anchor="middle">JSON</text>
+
+<!-- Answer format -->
+<rect x="906" y="318" width="262" height="102" rx="14" fill="#ffffff" filter="url(#shadow)"/>
+<text x="924" y="346" class="card-title">The model's answer</text>
+<text x="924" y="372" class="mono">{ file_name, code,</text>
+<text x="924" y="394" class="mono">  check }</text>
+
+<!-- You and the harness -->
+<line x1="244" y1="244" x2="326" y2="244" stroke="#1a73e8" stroke-width="2" stroke-linecap="butt" marker-end="url(#head-blue)"/>
+<text x="285" y="234" class="edge" text-anchor="middle">task</text>
+<line x1="326" y1="292" x2="248" y2="292" stroke="#5f6368" stroke-width="2" stroke-linecap="butt" marker-end="url(#head)"/>
+<text x="287" y="312" class="edge" text-anchor="middle">result</text>
+
+<!-- Work folder and check -->
+<rect x="330" y="460" width="224" height="86" rx="14" fill="#ffffff" filter="url(#shadow)"/>
+<circle cx="362" cy="492" r="17" fill="#e6f4ea"/>
+<path d="M352,486 h7 l3,3 h10 v12 h-20 Z" fill="none" stroke="#137333" stroke-width="2" stroke-linejoin="round"/>
+<text x="390" y="498" class="card-title">harness_out/</text>
+<text x="348" y="530" class="mono">main.rs</text>
+
+<rect x="582" y="460" width="224" height="86" rx="14" fill="#ffffff" filter="url(#shadow)"/>
+<circle cx="614" cy="492" r="17" fill="#fef7e0"/>
+<path d="M609,484 L622,492 L609,500 Z" fill="#b06000"/>
+<text x="642" y="498" class="card-title">sh -c check</text>
+<text x="600" y="530" class="mono">rustc main.rs &amp;&amp; ./main</text>
+
+<line x1="442" y1="422" x2="442" y2="456" stroke="#5f6368" stroke-width="2" stroke-linecap="butt" marker-end="url(#head)"/>
+<text x="450" y="444" class="edge">save</text>
+<line x1="660" y1="422" x2="660" y2="456" stroke="#5f6368" stroke-width="2" stroke-linecap="butt" marker-end="url(#head)"/>
+<text x="668" y="444" class="edge">run</text>
+<line x1="760" y1="458" x2="760" y2="424" stroke="#c5221f" stroke-width="2" stroke-linecap="butt" marker-end="url(#head-red)"/>
+<text x="768" y="444" class="edge">output or error</text>
+</svg>

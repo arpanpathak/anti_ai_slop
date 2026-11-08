@@ -1,0 +1,89 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 560" width="1200" height="560" role="img" aria-label="Sequence diagram of one harness attempt. Harness::ask calls Harness::send. Harness::send writes request-N.json, posts the conversation to the model, receives the reply content, writes reply-N.txt, prints finish_reason and token usage, and returns State::Check with the reply.">
+<defs>
+  <filter id="shadow" x="-10%" y="-10%" width="120%" height="140%">
+    <feDropShadow dx="0" dy="1" stdDeviation="1" flood-color="#1f2937" flood-opacity="0.14"/>
+    <feDropShadow dx="0" dy="4" stdDeviation="7" flood-color="#1f2937" flood-opacity="0.10"/>
+  </filter>
+  <marker id="head" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="10" markerHeight="10" markerUnits="userSpaceOnUse" orient="auto">
+    <path d="M0,0 L10,5 L0,10 L3,5 Z" fill="#5f6368"/>
+  </marker>
+  <marker id="head-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="10" markerHeight="10" markerUnits="userSpaceOnUse" orient="auto">
+    <path d="M0,0 L10,5 L0,10 L3,5 Z" fill="#1a73e8"/>
+  </marker>
+  <marker id="head-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="10" markerHeight="10" markerUnits="userSpaceOnUse" orient="auto">
+    <path d="M0,0 L10,5 L0,10 L3,5 Z" fill="#188038"/>
+  </marker>
+</defs>
+
+<style>
+  .title { font: 700 22px Roboto, "Helvetica Neue", Arial, sans-serif; fill: #202124; }
+  .lede { font: 400 14px Roboto, "Helvetica Neue", Arial, sans-serif; fill: #5f6368; }
+  .card-title { font: 700 15px "JetBrains Mono", "SF Mono", Menlo, monospace; fill: #202124; }
+  .muted { font: 400 12px Roboto, "Helvetica Neue", Arial, sans-serif; fill: #5f6368; }
+  .edge { font: 500 12px Roboto, "Helvetica Neue", Arial, sans-serif; fill: #5f6368; }
+</style>
+
+<rect width="1200" height="560" fill="#f6f8fb"/>
+<text x="32" y="44" class="title">Harness: logging</text>
+<text x="32" y="68" class="lede">Each attempt writes the request and raw reply, then prints the stop reason and token usage.</text>
+
+<!-- Lifelines -->
+<line x1="130" y1="152" x2="130" y2="500" stroke="#c7cacf" stroke-width="1.5" stroke-dasharray="5 5"/>
+<line x1="370" y1="152" x2="370" y2="500" stroke="#c7cacf" stroke-width="1.5" stroke-dasharray="5 5"/>
+<line x1="610" y1="152" x2="610" y2="500" stroke="#c7cacf" stroke-width="1.5" stroke-dasharray="5 5"/>
+<line x1="850" y1="152" x2="850" y2="500" stroke="#c7cacf" stroke-width="1.5" stroke-dasharray="5 5"/>
+<line x1="1090" y1="152" x2="1090" y2="500" stroke="#c7cacf" stroke-width="1.5" stroke-dasharray="5 5"/>
+
+<!-- Participants -->
+<rect x="40" y="100" width="180" height="52" rx="10" fill="#e8f0fe" filter="url(#shadow)"/>
+<text x="130" y="132" class="card-title" text-anchor="middle" fill="#174ea6">Harness::ask</text>
+
+<rect x="280" y="100" width="180" height="52" rx="10" fill="#e8f0fe" filter="url(#shadow)"/>
+<text x="370" y="132" class="card-title" text-anchor="middle" fill="#174ea6">Harness::send</text>
+
+<rect x="520" y="100" width="180" height="52" rx="10" fill="#fef7e0" filter="url(#shadow)"/>
+<text x="610" y="132" class="card-title" text-anchor="middle" fill="#8a4b00">Model server</text>
+
+<rect x="760" y="100" width="180" height="52" rx="10" fill="#e6f4ea" filter="url(#shadow)"/>
+<text x="850" y="132" class="card-title" text-anchor="middle" fill="#137333">harness_out/</text>
+
+<rect x="1000" y="100" width="180" height="52" rx="10" fill="#f1f3f4" filter="url(#shadow)"/>
+<text x="1090" y="132" class="card-title" text-anchor="middle" fill="#3c4043">Terminal</text>
+
+<!-- Call -->
+<line x1="138" y1="190" x2="362" y2="190" stroke="#1a73e8" stroke-width="1.8" marker-end="url(#head-blue)"/>
+<rect x="215" y="174" width="70" height="16" fill="#f6f8fb"/>
+<text x="250" y="186" class="edge" text-anchor="middle">call send()</text>
+
+<!-- Request file -->
+<line x1="378" y1="230" x2="842" y2="230" stroke="#188038" stroke-width="1.8" marker-end="url(#head-green)"/>
+<rect x="545" y="214" width="130" height="16" fill="#f6f8fb"/>
+<text x="610" y="226" class="edge" text-anchor="middle">write request-N.json</text>
+
+<!-- POST -->
+<line x1="378" y1="270" x2="602" y2="270" stroke="#5f6368" stroke-width="1.8" marker-end="url(#head)"/>
+<rect x="432" y="254" width="116" height="16" fill="#f6f8fb"/>
+<text x="490" y="266" class="edge" text-anchor="middle">POST conversation</text>
+
+<!-- Content -->
+<line x1="602" y1="310" x2="378" y2="310" stroke="#5f6368" stroke-width="1.8" marker-end="url(#head)"/>
+<rect x="465" y="294" width="50" height="16" fill="#f6f8fb"/>
+<text x="490" y="306" class="edge" text-anchor="middle">content</text>
+
+<!-- Reply file -->
+<line x1="378" y1="350" x2="842" y2="350" stroke="#188038" stroke-width="1.8" marker-end="url(#head-green)"/>
+<rect x="552" y="334" width="116" height="16" fill="#f6f8fb"/>
+<text x="610" y="346" class="edge" text-anchor="middle">write reply-N.txt</text>
+
+<!-- Terminal -->
+<line x1="378" y1="390" x2="1082" y2="390" stroke="#5f6368" stroke-width="1.8" marker-end="url(#head)"/>
+<rect x="642" y="374" width="176" height="16" fill="#f6f8fb"/>
+<text x="730" y="386" class="edge" text-anchor="middle">print finish_reason + usage</text>
+
+<!-- Return -->
+<line x1="362" y1="430" x2="138" y2="430" stroke="#1a73e8" stroke-width="1.8" marker-end="url(#head-blue)"/>
+<rect x="190" y="414" width="120" height="16" fill="#f6f8fb"/>
+<text x="250" y="426" class="edge" text-anchor="middle">State::Check(reply)</text>
+
+<text x="32" y="524" class="muted">request-N.json holds the request body. reply-N.txt holds the raw content. The Authorization header is not saved.</text>
+</svg>

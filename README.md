@@ -49,9 +49,10 @@ cd harness
 API_KEY=... cargo run --release -- write a parallel sum algorithm using multiple CPU cores
 ```
 
-The program lands in `harness_out/`. The model server and model name are the `URL` and `MODEL`
-constants at the top of `src/main.rs`. The model chooses the check command, and the harness
-runs it as the current user, so run it in a folder where that is safe.
+The program lands in `harness_out/`. The harness also saves each request and raw reply there;
+`harness/README.md` shows a full run and how to read those files. The model server and model name
+are the `URL` and `MODEL` constants at the top of `src/main.rs`. The model chooses the check
+command, and the harness runs it as the current user, so run it in a folder where that is safe.
 
 We wrote the loop as a state machine with one `State` enum and one `match`.
 

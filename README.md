@@ -10,6 +10,9 @@ Skills and rules for Claude Code and other agents that keep AI slop out of prose
 | `skills/keep-it-simple-code` | Any code: cyclomatic complexity of at most 2, blank lines between logical groups, descriptive names, no over-engineering, no unwrap. |
 | `skills/technical-book-writing` | The chapter shape of a textbook in the style of *Programming Massively Parallel Processors*. |
 
+`examples/spsc_queue/` is the lock-free queue that produced the coding skill: the code the user
+approved, its complexity measured with `lizard`, and the conversation word for word.
+
 Install them for Claude Code on this machine:
 
 ```sh
@@ -31,8 +34,6 @@ pip install lizard && lizard -C 2 -w src/
 - `WRITING_GUIDE.md`: the writing guide of *Cracking the Systems Programming Interview*.
 - `WRITING_STANDARDS.md`: the writing standards of the GPU book.
 - `rust-rules/five_rules.md`: the five Rust rules used to score models.
-- `rust-rules/readability_training.md`: instruction and response pairs on functional and
-  imperative Rust.
 - `rust-rules/rustfmt.toml`: the formatting settings.
 
 Where a source disagrees with a skill, the skill wins. The skills are newer.

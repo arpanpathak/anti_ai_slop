@@ -12,6 +12,37 @@ Code that passes the compiler and clippy can still be rejected as "unreadable fu
 
 Each rule below records code that the user rejected and what they wanted instead.
 
+## The example this skill comes from
+
+The request was "implement a simple lock free queue in rust without over engineering, and weird
+unsafe cells". The first answer supported many producers and consumers, was generic over `T`,
+and had retry loops nested in branches, tests and safety notes. It took four rewrites to reach
+the code below, which the user called "fantastic code, readable understandable". Every function
+has a cyclomatic complexity of 1 or 2 (`lizard` measured), and it prints `sum = 5050`.
+
+```rust
+fn push(&self, v: u64) -> bool {
+    let tail = self.tail.load(Relaxed);
+    let head = self.head.load(Acquire);
+
+    if tail.wrapping_sub(head) == self.arena.len() {
+        return false; // full
+    }
+
+    self.arena[tail % self.arena.len()].store(v, Relaxed);
+
+    self.tail.store(tail.wrapping_add(1), Release); // publish
+
+    true
+}
+```
+
+One guard, then one step per group, separated by blank lines. No `unsafe`: the slots are
+`AtomicU64` with `Relaxed` ordering, which compiles to an ordinary load or store. The whole
+program and the conversation are in `examples/spsc_queue/` of the anti_ai_slop repository.
+
+Aim for this shape in every function you write.
+
 ## 1. Ask for the constraints before writing
 
 The most expensive mistake is building the general case when a simple one was asked for. A

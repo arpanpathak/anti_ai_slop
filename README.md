@@ -2,6 +2,23 @@
 
 Skills and rules for Claude Code and other agents that keep AI slop out of prose and code.
 
+![A stochastic parrot says assert_eq!(sum, 5050). A harness asks, checks and fixes until
+attempt 3 prints sum = 5050, and a Rust crab runs the check. A harness for local models,
+video coming soon.](assets/teaser.png)
+
+AI didn't reduce jobs. It increased them. Every day is a massive fight with a
+non-deterministic stochastic parrot idiot. System prompts stop helping once the context window
+fills up with tokens. The model forgets your coding standards, your writing style, and how to
+think like a Senior Staff Engineer. It starts to butcher your existing codebase and
+over-engineers simple solutions with clever code that no human can comprehend. Harness
+companies intentionally made them dumber, so that you spend more on tokens and system prompts.
+
+If you care about your machine and have some mechanical sympathy for the maintainers, review
+every line of code and understand the compiled assembly. I'm making a video on building a
+harness and calling local models. I'll talk about different inference engines and what the
+models actually output, so that we can all build a safe and more deterministic finite state
+machine. Until then, use the skills below.
+
 ## Skills
 
 | Skill | Use it for |

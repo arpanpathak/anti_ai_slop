@@ -104,7 +104,14 @@ impl Harness {
         println!("--- attempt {}", self.attempt);
 
         match self.send() {
-            Ok(reply) => State::Check(reply),
+            Ok(reply) => {
+                let path = format!("{WORK_DIR}/reply-{}.txt", self.attempt);
+                fs::write(&path, &reply).ok();
+
+                println!("raw reply: {path}");
+
+                State::Check(reply)
+            }
             Err(failure) => State::Fix(failure),
         }
     }
@@ -141,12 +148,19 @@ impl Harness {
     /// Sends the conversation to the model and returns the reply text.
     fn send(&self) -> Result<String> {
         let request = json!({ "model": MODEL, "messages": self.conversation, "temperature": 0.2 });
+        let request_path = format!("{WORK_DIR}/request-{}.json", self.attempt);
+        fs::write(request_path, serde_json::to_string_pretty(&request)?)?;
 
         let response: Value = ureq::post(&self.url)
             .header("Authorization", format!("Bearer {}", self.api_key))
             .send_json(request)?
             .into_body()
             .read_json()?;
+
+        let finish = response["choices"][0]["finish_reason"]
+            .as_str()
+            .unwrap_or("unknown");
+        println!("finish_reason: {finish}, usage: {}", response["usage"]);
 
         let content = response["choices"][0]["message"]["content"].as_str();
 

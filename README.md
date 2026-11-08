@@ -8,6 +8,7 @@ Skills and rules for Claude Code and other agents that keep AI slop out of prose
 |---|---|
 | `skills/anti-ai-slop-writing-for-neurodivergent` | Any prose for people: chapters, docs, READMEs, PR and commit text, chat answers. Includes `scripts/slop_audit.py`. |
 | `skills/keep-it-simple-code` | Any code: cyclomatic complexity of at most 2, blank lines between logical groups, descriptive names, no over-engineering, no unwrap. |
+| `skills/book-figures-pseudocode-formulas` | Figures (Material containers, sharp arrowheads, labels inside boxes), CLRS pseudocode with CUDA names, consistent formula fonts, checking rendered pages. |
 | `skills/technical-book-writing` | The chapter shape of a textbook in the style of *Programming Massively Parallel Processors*. |
 
 `examples/spsc_queue/` is the lock-free queue that produced the coding skill: the code the user
@@ -19,6 +20,9 @@ Install them for Claude Code on this machine:
 ./install.sh            # links each skill into ~/.claude/skills
 ```
 
+`technical-book-writing` already syncs from the claude.ai account, so remove its link after
+installing to avoid a duplicate.
+
 Audit a document and a source tree:
 
 ```sh
@@ -28,12 +32,13 @@ pip install lizard && lizard -C 2 -w src/
 
 ## Sources
 
-`sources/` holds the original guides the skills were built from, unchanged:
+`sources/` holds the original guides the skills were built from, unchanged. The skills also
+draw on the author's feedback in the GPU book, the GPU Kubernetes book and the online chat in
+`examples/spsc_queue/`.
 
 - `anti_ai_slop.md`: the slop taxonomy and the deletion test.
 - `WRITING_GUIDE.md`: the writing guide of *Cracking the Systems Programming Interview*.
 - `WRITING_STANDARDS.md`: the writing standards of the GPU book.
-- `rust-rules/five_rules.md`: the five Rust rules used to score models.
 - `rust-rules/rustfmt.toml`: the formatting settings.
 
 Where a source disagrees with a skill, the skill wins. The skills are newer.

@@ -37,6 +37,12 @@ fn push(&self, v: u64) -> bool {
 }
 ```
 
+What the user said along the way: "without over engineering, and weird unsafe cells", then
+"why the slots also need to be atomic", then "Why it took you so many attempts and
+enshittified garbage to finally produce good code", and finally "Keep it Simple Stupid. Keep it
+cyclomatic complexity of 2". Four rounds were spent because the first answer guessed the most
+general case instead of asking how many threads there were.
+
 One guard, then one step per group, separated by blank lines. No `unsafe`: the slots are
 `AtomicU64` with `Relaxed` ordering, which compiles to an ordinary load or store. The whole
 program and the conversation are in `examples/spsc_queue/` of the anti_ai_slop repository.
@@ -156,7 +162,52 @@ A comment stays attached to the statement below it. Never write one-line bodies 
    as plumbing.
 6. Change only what was asked. "Fix the code in the PR" means only the lines the PR adds.
 
-## 10. The standing instruction
+## 10. Python
+
+- Type every function, parameter, return value and module constant. Check with
+  `mypy --strict`; it must report no issues.
+- Use a frozen `@dataclass` for a record, not a tuple whose fields are read as `[0]` and `[1]`.
+- Compile regular expressions once, as named module constants.
+- `lizard` counts each `if` inside a comprehension, and each `and` or `or`, as a decision. Use
+  `filter` with a named predicate (`filter(is_long, sentences)`) to stay at 2.
+- `scripts/slop_audit.py` in the writing skill is written this way: 13 functions, each at
+  complexity 1 or 2, and `mypy --strict` clean.
+
+## 11. Go
+
+The GPU Kubernetes book's Go model of an informer was rejected as "non idiomatic, nested if
+else soup, hard coded strings instead of iota defined named constants, verbose soup".
+
+- Typed enums with `iota` and a `String` method, not string literals such as `"ADDED"`.
+- A method such as `Delete` on the object, not a `Deleted bool` flag.
+- No boolean parameters (`Disconnect(down bool)`). Write two methods.
+- A small struct with methods, not free functions with five parameters.
+- Typed fields, not formatted strings that encode data (`"6xH100"`).
+- Logging as a package-level helper, not a closure passed through every function.
+- Return errors with context and handle them once in `main` with `log.Fatal`. No `panic(err)`.
+- Use `slices` and `maps` from the standard library where they remove a loop.
+
+## 12. Code printed in a book
+
+- **Excerpts parse on their own.** Every excerpt closes every bracket it opens. In Rust, give
+  each excerpt its own `impl` block. Never cut a loop or an `impl` in half.
+- **Build the code in parts.** The problem, a design figure, then short excerpts (8 to 30
+  lines) each beside the text that explains it, about 8 excerpts at most per chapter.
+- **Complete programs at the end.** Every chapter ends with the whole programs, with imports
+  and `main`, so the reader can copy one that works.
+- **Both languages for the same things.** When a book uses two languages (Go and Rust, C++ and
+  Rust), every component gets both, with matching names, file structure and output, shown in
+  tabs. Real-cluster code uses each language's own library (client-go, kube-rs).
+- **Doc comments on everything printed,** including CUDA kernels, constants and struct fields.
+  Explain each binary end to end: how it is built, where it runs, what it calls and what its
+  output means.
+- **Real output.** Print the program's real output after it, and run every program before the
+  book is published (`code/validate.sh` in the GPU book).
+- **The domain's names.** CUDA code uses `threadIdx.x`, `blockIdx.x`, `blockDim.x`, `gridDim.x`.
+- **Lines of 92 characters or fewer,** so whole files fit the printed page.
+- **No assembly in the Rust chapters** of the GPU book: they stay pure Rust.
+
+## 13. The standing instruction
 
 Put this at the top of a prompt or a `CLAUDE.md`:
 

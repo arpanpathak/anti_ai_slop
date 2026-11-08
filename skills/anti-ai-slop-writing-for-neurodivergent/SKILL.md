@@ -301,7 +301,84 @@ chapter covers" box heading.
 - "Treat those chapters as a map of the territory, not a surveyor's certificate." becomes "Expect
   the code in those chapters to need changes as cuda-oxide develops."
 
-## 14. The author's note to readers and fellow writers
+## 14. Lessons from the Kubernetes and systems books
+
+These rules come from the GPU Kubernetes book, the distributed systems book and the Linux book.
+Each one answers a draft the author rejected.
+
+- **Vary chapter openings.** "This chapter depicts what happens under the hood when …" belongs
+  to one chapter of a book, not every chapter. Other openings: "So far, we have … In this
+  chapter, we will …", or a concrete problem first. In the Kubernetes book, the author asked
+  for full forms ("we will", "does not") in the formal register of PMPP.
+- **Explain every mechanism completely.** For each behavior, state the problem it solves, the
+  exact condition that triggers it ("when the server answers 410 Gone because the requested
+  version is older than the compaction point"), the mechanism, and what goes wrong without it.
+  Remove vague conditions: "as needed", "when it has to", "handles", "deals with", "various".
+- **Describe what a thing is in positive sentences.** "WorkQueue holds names, not events" was
+  rejected. Write "The queue stores the names of objects that changed." If a contrast teaches
+  something, give it its own sentence with the reason. Grep for ", not ", "never", "rather
+  than" and "instead of", and rewrite each reflexive contrast.
+- **Vary causal connectives.** "which is why", "that is why" and sentences built on "matters"
+  became a tic in nearly every paragraph. Use them once or twice per chapter at most.
+- **No "X at a time" or "one by one".** "We will work on 1 system at a time" was rejected.
+  Write "For each system, we will …".
+- **Do not announce a count before a list.** "has five requirements", "three components" read
+  badly. Give the list or the table directly.
+- **Plain chapter and part titles.** Use subject names as a reference book prints them:
+  "Pipes", "File Descriptors", "CPU Scheduling". Never a repeated pattern such as "A pipe", "A
+  process", and never figurative part names.
+- **Keep "the" near 6% of words.** Measured drafts had 11 to 12%, with a third of sentences
+  opening with The, A or This. Rewrite whole paragraphs: plural subjects without an article,
+  names of nodes and functions as subjects, "we" and "our", possessives, fronted clauses.
+- **Commentary after code states only what the code cannot show:** the design decision, the
+  invariant, the failure it prevents. Do not restate types, method names or language
+  mechanics. Do not open paragraphs with a bare identifier followed by what it does, and do not
+  talk about "the file". The unit of a book is the solution, not the source file.
+- **Teach a term before using it,** including terms that appear in code comments and examples.
+  Show the problem, build the mechanism in plain words, then give its name. A library type gets
+  the same treatment as a concept.
+- **No interview framing in a book.** No "questions to expect", no "the way you would say it in
+  the room". A book reads as an ordinary professional book about its subject.
+- **No dramatized motivation.** Scenarios such as "chat messages asking whether anyone is still
+  using GPU 3" and aphoristic closers ("an expensive machine doing nothing") were rejected.
+  Enthusiasm comes from plain statements of what the reader will learn.
+- **Dictated text is used verbatim.** Correct only spelling and grammar, even where the author
+  uses words from the slop lists.
+- **Restyle what the author asked for; never delete it.** When the author objects to the style
+  of a section they requested, rewrite it in place. Removing it was rejected as butchering.
+- **Over-correction is also rejected.** Replacing an introduction with a numbered scheme, a
+  contents table and a glossary block read as "robotic". Do not describe the book's own
+  structure, and define terms inside the prose.
+- **No meta-commentary about editorial decisions** (why chapters are numbered as they are, or
+  where a file lives). State a structural fact in one plain clause, or not at all.
+- **No hardware name-dropping.** Name the measurement machine once. Use neutral names
+  (`node-a`, 10.0.0.2) in sessions.
+- **No staged problem and remedy pairs** ("The obvious rule is … It fails when …", "The trouble
+  is … The remedy is …"). State the fact and its cause.
+- **Chat replies stay unhurried.** "One word and they're gone" read as pressure. Offer an
+  action in plain words.
+
+## 15. Algorithm chapters in the paper style
+
+The GPU book's algorithm chapters follow the author's papers (`tiled-parallel-programming`,
+`stayleNET`). Chapters written as code commentary were rejected as "garbage shallow".
+
+1. Carry one tiny worked example (4 x 4 matrices, 8 elements) through every figure and section.
+2. Build intuition by hand first: follow one thread and one value, count the reads.
+3. State a **key observation** in a box, then numbered **definitions**, each with an example
+   line.
+4. Give CLRS-style pseudocode, and cite its line numbers in the text.
+5. Count operations and memory traffic in general form.
+6. Break the algorithm on purpose and show the concrete wrong value (`c00 = 7` instead of 11).
+7. Prove subtle correctness with a loop invariant.
+8. Show the code only after the algorithm is derived, and keep the walk through it short.
+9. Explain measurements ("why the speedup is 4, not 16"), and end each section with exercises.
+
+Group algorithms into families that span chapters (elementwise and reduction, matrix
+multiplication, stencils, scan-based, normalization). The figure, pseudocode and formula rules
+are in the `book-figures-pseudocode-formulas` skill.
+
+## 16. The author's note to readers and fellow writers
 
 Keep this note verbatim when the author asks to include it.
 

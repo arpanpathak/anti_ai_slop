@@ -1,0 +1,21 @@
+\begin{table}[!t]
+\centering
+\caption{Constants of our harness and limits of each check, with the values that we use.}
+\label{tab:limits}
+\footnotesize
+\renewcommand{\arraystretch}{1.12}
+\begin{tabular}{@{}l l >{\raggedright\arraybackslash}p{3.9cm}@{}}
+\toprule
+Name & Value & Meaning \\
+\midrule
+\const{MaxAttempts} & 5 & requests for one task \\
+\const{WorkDir} & \code{harness\_out} & host folder for the programs \\
+\const{WallSeconds} & 120\,s & wall-clock time of a check \\
+\const{KillAfter} & 5\,s & from SIGTERM to SIGKILL \\
+\const{CpuSeconds} & 60\,s & CPU time of each process \\
+\const{AddressSpace} & 4\,GiB & memory of each process \\
+\const{FileSize} & 64\,MiB & size of each file \\
+\const{OpenFiles} & 256 & open files of each process \\
+\bottomrule
+\end{tabular}
+\end{table}

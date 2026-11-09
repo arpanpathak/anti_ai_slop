@@ -3,8 +3,8 @@
 `harness` sends a task in plain English to an OpenAI-compatible model. A reply contains a file
 name, a program, and a shell command that checks the program.
 
-`harness` saves each program in `harness_out/`, runs the check, and sends failures back to the
-model for up to 5 attempts. Each program must assert its own result, so a wrong answer fails
+We save each program in `harness_out/`, run its check in a sandbox, and send failures back to
+the model, for up to 5 attempts. Each program must assert its own result, so a wrong answer fails
 its own check.
 
 <img src="assets/system-design.svg"
@@ -31,6 +31,56 @@ After one build, we can run the binary without Cargo:
 ```sh
 ./target/release/harness "your task"
 ```
+
+## Sandbox
+
+We treat the check command as untrusted, because the model writes it and a prompt injection can
+turn it into any command `sh` can run. In `src/sandbox.rs`, we start each check through 3
+standard tools.
+
+```text
+timeout --kill-after=5 120  prlimit --cpu=60 --as=4GiB --fsize=64MiB --nofile=256  bwrap ...  sh -c CHECK
+```
+
+With `bwrap` (bubblewrap), we create new user, mount, PID, network, IPC and UTS namespaces and
+mount the following inside them.
+
+- `/usr`, `/etc/alternatives`, `/etc/ld.so.cache`, `~/.rustup` and `~/.cargo/bin`, read-only.
+- The program at `/work/main.rs`, read-only.
+- `/work` and `/tmp` as empty tmpfs mounts. We discard both when the check exits, so a build
+  output or a deleted file never reaches `harness_out/`.
+- A fresh `/proc` for the new PID namespace, in which bwrap is process 1. When bwrap exits,
+  the kernel ends every process in the namespace.
+
+The network namespace has only a loopback interface. We clear the environment and set only
+`PATH`, `HOME=/work` and `RUSTUP_HOME`, so `API_KEY` stays outside the sandbox.
+
+Before we write a file, we reject a `file_name` that contains a directory, such as
+`../../.bashrc`.
+
+At startup, we run `true` in the sandbox. If it fails, we stop before the first request to the
+model. On Ubuntu 24.04, for example, `kernel.apparmor_restrict_unprivileged_userns = 1` removes
+the capabilities bwrap needs inside a new user namespace, and we print
+
+```text
+Error: the sandbox cannot start on this host: bwrap: loopback: Failed RTM_NEWADDR: Operation not permitted
+```
+
+We have not closed these gaps.
+
+- We load no seccomp filter, so a kernel bug reachable from a user namespace stays reachable.
+- We set no limit on the number of processes. `RLIMIT_NPROC` counts every process of the user
+  on the whole machine, so only the 120-second timeout ends a fork bomb.
+- We set no limit on the total size of `/work`. With `--fsize`, we cap each file at 64 MiB,
+  and tmpfs uses RAM.
+- We send the check output back to the model unchanged, so a program can print instructions
+  for the next attempt.
+- A check that prints `ok` and exits 0 passes. The sandbox limits which files, processes and
+  networks a check can reach, and the model still decides what the check tests.
+
+On a Jetson Orin NX with Linux 5.15, the sandbox added about 12 ms to each check. An empty
+check took 17 ms in the sandbox and 5 ms without it (mean of 50 runs). The sample check
+`rustc main.rs && ./main` took 361 ms in the sandbox and 362 ms without it (mean of 10 runs).
 
 ## Logs
 
@@ -303,5 +353,7 @@ finish than one that asks for "all memory management methods."
 cargo test --release
 ```
 
-The suite runs 9 tests against a fake model server on localhost. They cover parsing, saving,
-check failures, and the retry loop.
+We run 14 tests, some against a fake model server on localhost. They cover parsing, saving,
+check failures and the retry loop. In 5 of them, we attempt to escape the sandbox. We use a
+`../` file name, write a file that must disappear, overwrite the read-only program, read the
+host's files and environment, and list the network interfaces.

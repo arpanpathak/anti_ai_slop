@@ -1,0 +1,16 @@
+experiment: host-matrix
+time: 2026-11-09T055523Z
+commit: 3528a56
+kernel: 5.15.148-tegra
+
+distribution | Ubuntu 22.04.5 LTS
+bubblewrap | bubblewrap 0.6.1
+/proc/sys/kernel/apparmor_restrict_unprivileged_userns | absent
+/proc/sys/kernel/unprivileged_userns_clone | 1
+/proc/sys/user/max_user_namespaces | 61507
+/proc/sys/kernel/hostname | yahboom
+sandbox starts | yes
+user id inside | 1000
+processes inside | 4
+network interfaces inside | lo
+host name inside | yahboom

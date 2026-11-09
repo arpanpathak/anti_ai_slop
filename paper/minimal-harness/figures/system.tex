@@ -1,0 +1,29 @@
+\begin{figure}[!t]
+\figcard{One attempt}{We write a model's program on our machine and run its check inside a sandbox.}{%
+\begin{tikzpicture}[figure]
+  \node[block, fill=bluefill, text=blueink, minimum width=3.6cm] (model) at (0,0)
+    {\textbf{model server}\\[-1pt]\scriptsize chat API};
+  \node[block, fill=violetfill, text=violetink, minimum width=3.6cm] (harness) at (0,-2.1)
+    {\textbf{harness}\\[-1pt]\scriptsize state machine of \cref{fig:states}};
+  \node[block, fill=amberfill, text=amberink, minimum width=3.0cm] (program) at (-1.95,-4.6)
+    {\texttt{\scriptsize harness\_out/main.rs}\\[-1pt]\scriptsize plain file name};
+  \node[block, fill=white, text=grayink, minimum width=3.0cm] (check) at (1.95,-4.6)
+    {\texttt{\scriptsize rustc main.rs}\\[-2pt]\texttt{\scriptsize \&\& ./main}};
+  \coordinate (sandbox top) at ($(check.north)+(0,0.45)$);
+  \begin{scope}[on background layer]
+    \node[region, fill=greenfill!80, fit=(check)(sandbox top), inner sep=5pt] (sandbox) {};
+  \end{scope}
+  \node[region label, text=greenink, anchor=north east] at ($(sandbox.north east)+(-2mm,-1.2mm)$) {sandbox};
+  \coordinate (send) at ($(harness.north)+(-0.7,0)$);
+  \coordinate (receive) at ($(harness.north)+(0.7,0)$);
+  \coordinate (write) at ($(harness.south)+(-1.2,0)$);
+  \coordinate (result) at ($(check.north)+(-0.75,0)$);
+  \draw[flow] (send) -- node[edge label, left] {conversation} (send |- model.south);
+  \draw[flow] (receive |- model.south) -- node[edge label, right] {reply} (receive);
+  \draw[flow] (write) -- node[edge label, left] {write} (write |- program.north);
+  \draw[flow] (program) -- node[edge label, above] {bind} (check);
+  \draw[flow] (result) -- node[edge label, right, pos=0.6] {exit status\\[-2pt]and output} (result |- harness.south);
+\end{tikzpicture}}
+\caption{One attempt, with a check from our sample run in \cref{sec:evaluation}. Our model server runs on a separate machine.}
+\label{fig:system}
+\end{figure}

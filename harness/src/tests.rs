@@ -121,7 +121,7 @@ fn check_returns_the_output_of_a_failing_program() -> Result<()> {
 
     let state = harness().check(answer("fail.sh", "echo sum = 0; exit 1", "sh fail.sh"));
 
-    assert!(failure_text(state).contains("the check failed:\nsum = 0"));
+    assert!(failure_text(state).contains("the check failed with exit status: 1:\nsum = 0"));
 
     Ok(())
 }
@@ -138,10 +138,69 @@ fn check_rejects_output_that_is_not_utf8() -> Result<()> {
 }
 
 #[test]
-fn check_reports_a_file_that_cannot_be_saved() {
-    let state = harness().check(answer("missing/sum.sh", "echo 1", "true"));
+fn save_rejects_a_file_name_that_leaves_the_workspace() {
+    let state = harness().check(answer("../escaped.sh", "echo 1", "true"));
 
-    assert!(failure_text(state).contains("No such file or directory"));
+    assert!(failure_text(state).contains("file_name must be a plain file name"));
+    assert!(!Path::new("escaped.sh").exists());
+}
+
+#[test]
+fn sandbox_discards_what_the_check_writes() -> Result<()> {
+    fs::create_dir_all(WORK_DIR)?;
+
+    let check = "echo left > left.txt && test -s left.txt";
+    let state = harness().check(answer("write.sh", "echo 1", check));
+
+    assert!(matches!(state, State::Pass));
+    assert!(!Path::new(WORK_DIR).join("left.txt").exists());
+
+    Ok(())
+}
+
+#[test]
+fn sandbox_keeps_the_program_read_only() -> Result<()> {
+    fs::create_dir_all(WORK_DIR)?;
+
+    let state = harness().check(answer("keep.sh", "echo 1", "echo changed > keep.sh"));
+
+    assert!(failure_text(state).contains("Read-only file system"));
+    assert_eq!(
+        fs::read_to_string(Path::new(WORK_DIR).join("keep.sh"))?,
+        "echo 1"
+    );
+
+    Ok(())
+}
+
+#[test]
+fn sandbox_hides_the_host_files_and_environment() -> Result<()> {
+    fs::create_dir_all(WORK_DIR)?;
+
+    let manifest_dir = env::var("CARGO_MANIFEST_DIR")?;
+    let check = format!("test ! -e {manifest_dir}/Cargo.toml && test -z \"$CARGO_MANIFEST_DIR\"");
+    let state = harness().check(answer("hide.sh", "echo 1", &check));
+
+    assert!(matches!(state, State::Pass));
+
+    Ok(())
+}
+
+#[test]
+fn sandbox_has_only_the_loopback_interface() -> Result<()> {
+    fs::create_dir_all(WORK_DIR)?;
+
+    let check = "test \"$(tail -n +3 /proc/net/dev | cut -d: -f1 | tr -d ' ')\" = lo";
+    let state = harness().check(answer("net.sh", "echo 1", check));
+
+    assert!(matches!(state, State::Pass));
+
+    Ok(())
+}
+
+#[test]
+fn probe_starts_the_sandbox() -> Result<()> {
+    sandbox::probe()
 }
 
 #[test]

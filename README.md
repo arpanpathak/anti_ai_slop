@@ -38,11 +38,11 @@ and each failure goes back to the model.](harness/assets/system-design.svg)
 ![Entity diagram of the harness: struct Harness steps through enum State, and struct Answer
 carries one reply from parse to report.](harness/assets/entities.svg)
 
-`harness/` is a command-line tool in Rust, under 200 lines. We give it a task in plain English.
-It sends our task to a local model, with `keep-it-simple-code` as its system prompt. Then it
-saves the model's program and runs the model's check command. When a check fails, the harness
-sends back the compiler error or program output and asks again, for up to 5 attempts. Each
-program must assert its own result, so a wrong answer fails its check too.
+`harness/` is a command-line tool in Rust, about 330 lines. We give it a task in plain English,
+and we send that task to a local model with `keep-it-simple-code` as the system prompt. We save
+the model's program, run the model's check command in a sandbox, and send each compiler error or
+program output back to the model, for up to 5 attempts. Each program must assert its own
+result, so a wrong answer fails its check too.
 
 ```sh
 cd harness
@@ -51,8 +51,17 @@ API_KEY=... cargo run --release -- write a parallel sum algorithm using multiple
 
 The program lands in `harness_out/`. The harness also saves each request and raw reply there;
 `harness/README.md` shows a full run and how to read those files. The model server and model name
-are the `URL` and `MODEL` constants at the top of `src/main.rs`. The model chooses the check
-command, and the harness runs it as the current user, so run it in a folder where that is safe.
+are the `URL` and `MODEL` constants at the top of `src/main.rs`.
+
+We treat the check command as untrusted, because the model writes it. We run each check with
+`bwrap` in new Linux namespaces, and we mount only `/usr`, the Rust toolchain and the program,
+all read-only. The working directory is an empty tmpfs, and we discard it when the check exits.
+Inside the sandbox, the network namespace has only a loopback interface, and the environment
+holds only `PATH`, `HOME` and `RUSTUP_HOME`. We cap CPU time, memory and file size with
+`prlimit`, and we stop a check after 120 seconds with `timeout`. We reject a `file_name` that
+contains a directory, such as `../../.bashrc`. On a host where we cannot create the sandbox, we
+stop before the first request to the model. The limits of the sandbox are listed in
+`harness/README.md`.
 
 We wrote the loop as a state machine with one `State` enum and one `match`.
 
@@ -62,15 +71,16 @@ enum State { Ask, Check(String), Fix(Error), Pass, GiveUp }
 
 | Measure | Value |
 |---|---|
-| Lines in `src/main.rs` | 197 |
+| Lines in `src/main.rs` and `src/sandbox.rs` | 228 and 101 |
 | Average cyclomatic complexity (`lizard`) | 2.5 |
-| Unit tests | 9 |
-| Line coverage (`cargo llvm-cov`) | 91.11%: every function except `main` |
+| Unit tests | 14 |
+| Line coverage (`cargo llvm-cov`) | 93.43%: every function except `main` |
 
-`main` reads `API_KEY` and the command line, so unit tests do not run it. The tests of `run`
-use a fake model server on localhost. `lizard` counts each `?` as a decision, so `main` and
-`send`, which are straight lines of `?`, score 4, and `run`, the dispatch `match`, scores 5.
-Every other function scores 1 or 2.
+Our unit tests do not call `main`, because it reads `API_KEY` and the command line. We test
+`run` against a fake model server on localhost, and in 5 tests we attempt to escape the
+sandbox. We measure complexity with `lizard`, which counts each `?` as a decision. With that
+count, `main` and `send`, which are straight lines of `?`, score 5 and 6, and `run`, the
+dispatch `match`, scores 5. Every other function scores 1 or 2.
 
 ## Sources
 

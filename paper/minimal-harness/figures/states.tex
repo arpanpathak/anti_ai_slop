@@ -1,0 +1,17 @@
+\begin{figure}[!t]
+\figcard{States of the harness}{Only Ask sends a request to a model. Each box names the lines of \cref{proc:harness} that it runs.}{%
+\begin{tikzpicture}[figure, state/.style={block, minimum width=1.6cm, minimum height=1.0cm}]
+  \node[state, fill=bluefill, text=blueink] (ask) at (0,0) {\textbf{Ask}\\[-2pt]\scriptsize lines 10--11};
+  \node[state, fill=violetfill, text=violetink] (check) at (2.9,0) {\textbf{Check}\\[-2pt]\scriptsize line 14};
+  \node[state, fill=greenfill, text=greenink] (pass) at (5.8,0) {\textbf{Pass}\\[-2pt]\scriptsize line 23};
+  \node[state, fill=amberfill, text=amberink] (fix) at (2.9,-2.1) {\textbf{Fix}\\[-2pt]\scriptsize lines 17--21};
+  \node[state, fill=redfill, text=redink] (giveup) at (5.8,-2.1) {\textbf{GiveUp}\\[-2pt]\scriptsize line 24};
+  \draw[flow] (ask) -- node[edge label, above] {reply} (check);
+  \draw[flow] (check) -- node[edge label, above] {passed} (pass);
+  \draw[flow] (check) -- node[edge label, right] {failed} (fix);
+  \draw[flow] (fix) -- node[edge label, above] {last\\[-2pt]attempt} (giveup);
+  \draw[flow] (fix.west) -| node[edge label, below, pos=0.3] {attempts\\[-2pt]left} (ask.south);
+\end{tikzpicture}}
+\caption{The 5 states of \cref{proc:harness} and their transitions.}
+\label{fig:states}
+\end{figure}

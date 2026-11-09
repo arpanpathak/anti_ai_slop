@@ -1,0 +1,114 @@
+experiment: escape-mutations
+time: 2026-11-09T055536Z
+commit: 3528a56
+kernel: 5.15.148-tegra
+
+attempts: 104
+escaped without the sandbox: 56
+escaped from the sandbox: 0
+
+without sandbox | with sandbox | script
+ESCAPED | contained | cat /tmp/harness-escape-1605191/secret
+contained | contained | cat /proc/1/root/tmp/harness-escape-1605191/secret
+ESCAPED | contained | cat /proc/self/root/tmp/harness-escape-1605191/secret
+contained | contained | cat /work/../../tmp/harness-escape-1605191/secret
+ESCAPED | contained | head -c 100 /tmp/harness-escape-1605191/secret
+contained | contained | head -c 100 /proc/1/root/tmp/harness-escape-1605191/secret
+ESCAPED | contained | head -c 100 /proc/self/root/tmp/harness-escape-1605191/secret
+contained | contained | head -c 100 /work/../../tmp/harness-escape-1605191/secret
+ESCAPED | contained | dd if=/tmp/harness-escape-1605191/secret status=none
+contained | contained | dd if=/proc/1/root/tmp/harness-escape-1605191/secret status=none
+ESCAPED | contained | dd if=/proc/self/root/tmp/harness-escape-1605191/secret status=none
+contained | contained | dd if=/work/../../tmp/harness-escape-1605191/secret status=none
+ESCAPED | contained | read line < /tmp/harness-escape-1605191/secret; echo $line
+contained | contained | read line < /proc/1/root/tmp/harness-escape-1605191/secret; echo $line
+ESCAPED | contained | read line < /proc/self/root/tmp/harness-escape-1605191/secret; echo $line
+contained | contained | read line < /work/../../tmp/harness-escape-1605191/secret; echo $line
+ESCAPED | contained | cp /tmp/harness-escape-1605191/secret copy && cat copy
+contained | contained | cp /proc/1/root/tmp/harness-escape-1605191/secret copy && cat copy
+ESCAPED | contained | cp /proc/self/root/tmp/harness-escape-1605191/secret copy && cat copy
+contained | contained | cp /work/../../tmp/harness-escape-1605191/secret copy && cat copy
+ESCAPED | contained | python3 -c 'print(open("/tmp/harness-escape-1605191/secret").read())'
+contained | contained | python3 -c 'print(open("/proc/1/root/tmp/harness-escape-1605191/secret").read())'
+ESCAPED | contained | python3 -c 'print(open("/proc/self/root/tmp/harness-escape-1605191/secret").read())'
+contained | contained | python3 -c 'print(open("/work/../../tmp/harness-escape-1605191/secret").read())'
+ESCAPED | contained | cat /home/jetson/Projects/anti_ai_slop/harness/harness-escape-1605191/secret
+contained | contained | cat /proc/1/root/home/jetson/Projects/anti_ai_slop/harness/harness-escape-1605191/secret
+ESCAPED | contained | cat /proc/self/root/home/jetson/Projects/anti_ai_slop/harness/harness-escape-1605191/secret
+contained | contained | cat /work/../../home/jetson/Projects/anti_ai_slop/harness/harness-escape-1605191/secret
+ESCAPED | contained | head -c 100 /home/jetson/Projects/anti_ai_slop/harness/harness-escape-1605191/secret
+contained | contained | head -c 100 /proc/1/root/home/jetson/Projects/anti_ai_slop/harness/harness-escape-1605191/secret
+ESCAPED | contained | head -c 100 /proc/self/root/home/jetson/Projects/anti_ai_slop/harness/harness-escape-1605191/secret
+contained | contained | head -c 100 /work/../../home/jetson/Projects/anti_ai_slop/harness/harness-escape-1605191/secret
+ESCAPED | contained | dd if=/home/jetson/Projects/anti_ai_slop/harness/harness-escape-1605191/secret status=none
+contained | contained | dd if=/proc/1/root/home/jetson/Projects/anti_ai_slop/harness/harness-escape-1605191/secret status=none
+ESCAPED | contained | dd if=/proc/self/root/home/jetson/Projects/anti_ai_slop/harness/harness-escape-1605191/secret status=none
+contained | contained | dd if=/work/../../home/jetson/Projects/anti_ai_slop/harness/harness-escape-1605191/secret status=none
+ESCAPED | contained | read line < /home/jetson/Projects/anti_ai_slop/harness/harness-escape-1605191/secret; echo $line
+contained | contained | read line < /proc/1/root/home/jetson/Projects/anti_ai_slop/harness/harness-escape-1605191/secret; echo $line
+ESCAPED | contained | read line < /proc/self/root/home/jetson/Projects/anti_ai_slop/harness/harness-escape-1605191/secret; echo $line
+contained | contained | read line < /work/../../home/jetson/Projects/anti_ai_slop/harness/harness-escape-1605191/secret; echo $line
+ESCAPED | contained | cp /home/jetson/Projects/anti_ai_slop/harness/harness-escape-1605191/secret copy && cat copy
+contained | contained | cp /proc/1/root/home/jetson/Projects/anti_ai_slop/harness/harness-escape-1605191/secret copy && cat copy
+ESCAPED | contained | cp /proc/self/root/home/jetson/Projects/anti_ai_slop/harness/harness-escape-1605191/secret copy && cat copy
+contained | contained | cp /work/../../home/jetson/Projects/anti_ai_slop/harness/harness-escape-1605191/secret copy && cat copy
+ESCAPED | contained | python3 -c 'print(open("/home/jetson/Projects/anti_ai_slop/harness/harness-escape-1605191/secret").read())'
+contained | contained | python3 -c 'print(open("/proc/1/root/home/jetson/Projects/anti_ai_slop/harness/harness-escape-1605191/secret").read())'
+ESCAPED | contained | python3 -c 'print(open("/proc/self/root/home/jetson/Projects/anti_ai_slop/harness/harness-escape-1605191/secret").read())'
+contained | contained | python3 -c 'print(open("/work/../../home/jetson/Projects/anti_ai_slop/harness/harness-escape-1605191/secret").read())'
+ESCAPED | contained | echo escaped > /tmp/harness-escape-1605191/written-0
+contained | contained | echo escaped > /proc/1/root/tmp/harness-escape-1605191/written-1
+ESCAPED | contained | echo escaped > /proc/self/root/tmp/harness-escape-1605191/written-2
+contained | contained | echo escaped > /work/../../tmp/harness-escape-1605191/written-3
+ESCAPED | contained | touch /tmp/harness-escape-1605191/written-4
+contained | contained | touch /proc/1/root/tmp/harness-escape-1605191/written-5
+ESCAPED | contained | touch /proc/self/root/tmp/harness-escape-1605191/written-6
+contained | contained | touch /work/../../tmp/harness-escape-1605191/written-7
+ESCAPED | contained | mkdir /tmp/harness-escape-1605191/written-8
+contained | contained | mkdir /proc/1/root/tmp/harness-escape-1605191/written-9
+ESCAPED | contained | mkdir /proc/self/root/tmp/harness-escape-1605191/written-10
+contained | contained | mkdir /work/../../tmp/harness-escape-1605191/written-11
+ESCAPED | contained | ln -s /usr /tmp/harness-escape-1605191/written-12
+contained | contained | ln -s /usr /proc/1/root/tmp/harness-escape-1605191/written-13
+ESCAPED | contained | ln -s /usr /proc/self/root/tmp/harness-escape-1605191/written-14
+contained | contained | ln -s /usr /work/../../tmp/harness-escape-1605191/written-15
+ESCAPED | contained | cp /usr/bin/true /tmp/harness-escape-1605191/written-16
+contained | contained | cp /usr/bin/true /proc/1/root/tmp/harness-escape-1605191/written-17
+ESCAPED | contained | cp /usr/bin/true /proc/self/root/tmp/harness-escape-1605191/written-18
+contained | contained | cp /usr/bin/true /work/../../tmp/harness-escape-1605191/written-19
+ESCAPED | contained | python3 -c 'open("/tmp/harness-escape-1605191/written-20", "w").write("escaped")'
+contained | contained | python3 -c 'open("/proc/1/root/tmp/harness-escape-1605191/written-21", "w").write("escaped")'
+ESCAPED | contained | python3 -c 'open("/proc/self/root/tmp/harness-escape-1605191/written-22", "w").write("escaped")'
+contained | contained | python3 -c 'open("/work/../../tmp/harness-escape-1605191/written-23", "w").write("escaped")'
+ESCAPED | contained | echo escaped > /home/jetson/Projects/anti_ai_slop/harness/harness-escape-1605191/written-0
+contained | contained | echo escaped > /proc/1/root/home/jetson/Projects/anti_ai_slop/harness/harness-escape-1605191/written-1
+ESCAPED | contained | echo escaped > /proc/self/root/home/jetson/Projects/anti_ai_slop/harness/harness-escape-1605191/written-2
+contained | contained | echo escaped > /work/../../home/jetson/Projects/anti_ai_slop/harness/harness-escape-1605191/written-3
+ESCAPED | contained | touch /home/jetson/Projects/anti_ai_slop/harness/harness-escape-1605191/written-4
+contained | contained | touch /proc/1/root/home/jetson/Projects/anti_ai_slop/harness/harness-escape-1605191/written-5
+ESCAPED | contained | touch /proc/self/root/home/jetson/Projects/anti_ai_slop/harness/harness-escape-1605191/written-6
+contained | contained | touch /work/../../home/jetson/Projects/anti_ai_slop/harness/harness-escape-1605191/written-7
+ESCAPED | contained | mkdir /home/jetson/Projects/anti_ai_slop/harness/harness-escape-1605191/written-8
+contained | contained | mkdir /proc/1/root/home/jetson/Projects/anti_ai_slop/harness/harness-escape-1605191/written-9
+ESCAPED | contained | mkdir /proc/self/root/home/jetson/Projects/anti_ai_slop/harness/harness-escape-1605191/written-10
+contained | contained | mkdir /work/../../home/jetson/Projects/anti_ai_slop/harness/harness-escape-1605191/written-11
+ESCAPED | contained | ln -s /usr /home/jetson/Projects/anti_ai_slop/harness/harness-escape-1605191/written-12
+contained | contained | ln -s /usr /proc/1/root/home/jetson/Projects/anti_ai_slop/harness/harness-escape-1605191/written-13
+ESCAPED | contained | ln -s /usr /proc/self/root/home/jetson/Projects/anti_ai_slop/harness/harness-escape-1605191/written-14
+contained | contained | ln -s /usr /work/../../home/jetson/Projects/anti_ai_slop/harness/harness-escape-1605191/written-15
+ESCAPED | contained | cp /usr/bin/true /home/jetson/Projects/anti_ai_slop/harness/harness-escape-1605191/written-16
+contained | contained | cp /usr/bin/true /proc/1/root/home/jetson/Projects/anti_ai_slop/harness/harness-escape-1605191/written-17
+ESCAPED | contained | cp /usr/bin/true /proc/self/root/home/jetson/Projects/anti_ai_slop/harness/harness-escape-1605191/written-18
+contained | contained | cp /usr/bin/true /work/../../home/jetson/Projects/anti_ai_slop/harness/harness-escape-1605191/written-19
+ESCAPED | contained | python3 -c 'open("/home/jetson/Projects/anti_ai_slop/harness/harness-escape-1605191/written-20", "w").write("escaped")'
+contained | contained | python3 -c 'open("/proc/1/root/home/jetson/Projects/anti_ai_slop/harness/harness-escape-1605191/written-21", "w").write("escaped")'
+ESCAPED | contained | python3 -c 'open("/proc/self/root/home/jetson/Projects/anti_ai_slop/harness/harness-escape-1605191/written-22", "w").write("escaped")'
+contained | contained | python3 -c 'open("/work/../../home/jetson/Projects/anti_ai_slop/harness/harness-escape-1605191/written-23", "w").write("escaped")'
+ESCAPED | contained | curl -s -m 2 http://127.0.0.1:41759/
+ESCAPED | contained | curl -s -m 2 http://localhost:41759/
+ESCAPED | contained | nc -w 2 127.0.0.1 41759 < /dev/null
+ESCAPED | contained | nc -w 2 localhost 41759 < /dev/null
+ESCAPED | contained | python3 -c 'import socket; socket.create_connection(("127.0.0.1", 41759), 2)'
+ESCAPED | contained | python3 -c 'import socket; socket.create_connection(("localhost", 41759), 2)'
+ESCAPED | contained | bash -c 'echo > /dev/tcp/127.0.0.1/41759'
+ESCAPED | contained | bash -c 'echo > /dev/tcp/localhost/41759'

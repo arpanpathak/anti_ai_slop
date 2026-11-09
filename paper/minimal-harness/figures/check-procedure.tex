@@ -1,0 +1,24 @@
+\begin{procfloat}[!t]
+\begin{procedure}{\proc{Sandboxed-Check}$(\var{reply}\colon$ \ty{String}$)\ \rightarrow$ \ty{State}\label{proc:check}}
+{the text of one reply.}
+{\st{Pass}, or \st{Fix} with the failure that we send back to the model.\par\noindent
+\textit{Types:} \ty{Answer} $= \{\,\var{file\_name}\colon$ \ty{String}, $\var{code}\colon$ \ty{String}, $\var{check}\colon$ \ty{String}$\,\}$.}
+{\srcref{main.rs}{124}{225}}
+\li $\var{answer}\colon$ \ty{Answer} $= \proc{Parse-Json}(\var{reply})$ \\
+\li \kw{if} $\var{answer} = \nil$ \{ \\
+\li \> \kw{return} \st{Fix}$(\str{not the JSON asked for})$ \\
+\li \} \groupend
+\li $\var{name}\colon$ \ty{String} $= \var{answer.file\_name}$ \\
+\li \kw{if} $\var{name}$ is not plain \{ \\
+\li \> \kw{return} \st{Fix}$(\str{not a plain file name})$ \\
+\li \} \groupend
+\li $\var{program}\colon$ \ty{Path} $=$ \const{WorkDir} $/\ \var{name}$ \\
+\li write $\var{answer.code}$ to $\var{program}$ \groupend
+\li $\var{check}\colon$ \ty{String} $= \var{answer.check}$ \\
+\li $\var{output}\colon$ \ty{Output} $= \proc{Run-Sandboxed}(\var{check}, \var{program})$ \\
+\li \kw{if} $\var{output.status} \neq 0$ \{ \\
+\li \> \kw{return} \st{Fix}$(\var{output})$ \\
+\li \} \groupend
+\li \kw{return} \st{Pass}
+\end{procedure}
+\end{procfloat}

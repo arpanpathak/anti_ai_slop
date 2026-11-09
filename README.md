@@ -1,6 +1,8 @@
 # anti_ai_slop
 
-Skills and rules for Claude Code and other agents that keep AI slop out of prose and code.
+Skills and rules for Claude Code and other agents to keep AI slop out of prose and code. They hold non-deterministic, stochastic parrot models accountable for suggesting unsafe tool calls across process boundaries, utilizing the Linux kernel's zero-trust principles as if safety were baked directly into the kernel. This is a more holistic approach than the over-engineered, bloated MCP protocol.
+
+"Trust I seek and I'm finding you,"
 
 ## Skills
 

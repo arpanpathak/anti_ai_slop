@@ -1,0 +1,26 @@
+\begin{figure}[!t]
+\figcard{What a check can open}{Blue rows are read-only copies of host files. Red rows stay hidden, and green rows are new for each check.}{%
+\begin{tikzpicture}[figure, row/.style={chip, minimum width=3.15cm, text width=3.0cm}]
+  \node[region label] at (-1.95,0.52) {host};
+  \node[region label] at (1.95,0.52) {sandbox};
+  \node[row, fill=bluefill, text=blueink] (h1) at (-1.95,0) {\texttt{/usr}};
+  \node[row, fill=bluefill, text=blueink] (h2) at (-1.95,-0.5) {\texttt{/home/user/.rustup}};
+  \node[row, fill=bluefill, text=blueink] (h3) at (-1.95,-1.0) {\texttt{/home/user/.cargo/bin}};
+  \node[row, fill=bluefill, text=blueink] (h4) at (-1.95,-1.5) {\texttt{harness\_out/main.rs}};
+  \node[row, fill=redfill, text=redink] (h5) at (-1.95,-2.0) {\texttt{/home/user/.ssh}};
+  \node[row, fill=redfill, text=redink] (h6) at (-1.95,-2.5) {\texttt{API\_KEY}, all variables};
+  \node[row, fill=redfill, text=redink] (h7) at (-1.95,-3.0) {every host process};
+  \node[row, fill=redfill, text=redink] (h8) at (-1.95,-3.5) {every network interface};
+  \node[row, fill=bluefill, text=blueink] (s1) at (1.95,0) {\texttt{/usr}};
+  \node[row, fill=bluefill, text=blueink] (s2) at (1.95,-0.5) {\texttt{/home/user/.rustup}};
+  \node[row, fill=bluefill, text=blueink] (s3) at (1.95,-1.0) {\texttt{/home/user/.cargo/bin}};
+  \node[row, fill=bluefill, text=blueink] (s4) at (1.95,-1.5) {\texttt{/work/main.rs}};
+  \node[row, fill=greenfill, text=greenink] (s5) at (1.95,-2.0) {\texttt{/work}, \texttt{/tmp}: empty};
+  \node[row, fill=greenfill, text=greenink] (s6) at (1.95,-2.5) {\texttt{PATH}, \texttt{HOME}, \texttt{RUSTUP\_HOME}};
+  \node[row, fill=greenfill, text=greenink] (s7) at (1.95,-3.0) {processes of the check};
+  \node[row, fill=greenfill, text=greenink] (s8) at (1.95,-3.5) {loopback interface \texttt{lo}};
+  \foreach \i in {1,2,3,4} { \draw[flow] (h\i.east) -- (s\i.west); }
+\end{tikzpicture}}
+\caption{View of a check (\cref{def:view}), with our implementation's paths. Inside a sandbox, \texttt{HOME} is \texttt{/work}.}
+\label{fig:mounts}
+\end{figure}

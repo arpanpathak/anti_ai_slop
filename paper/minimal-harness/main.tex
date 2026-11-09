@@ -1,0 +1,298 @@
+% Two-column preprint. Every figure, table and procedure is one column wide.
+\documentclass[10pt,twocolumn,a4paper]{article}
+\usepackage[margin=0.75in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\input{macros}
+\usepackage[numbers,sort&compress]{natbib}
+\usepackage[colorlinks,linkcolor=accent,citecolor=accent,urlcolor=accent]{hyperref}
+\usepackage[capitalise,noabbrev]{cleveref}
+\crefname{procnum}{Procedure}{Procedures}
+\crefname{listnum}{Listing}{Listings}
+\setlength{\bibsep}{0pt}
+\renewcommand{\bibfont}{\footnotesize}
+\setlength{\columnsep}{0.25in}
+\setlength{\emergencystretch}{3em}
+\hyphenation{sto-chas-tic de-ter-min-is-tic name-space name-spaces}
+\renewcommand{\topfraction}{0.9}
+\renewcommand{\textfraction}{0.08}
+\renewcommand{\floatpagefraction}{0.85}
+\raggedbottom
+
+\title{\textbf{A State-Machine Harness and a Namespace Sandbox\\for Code Written by Language Models}}
+\author{Arpan Pathak}
+\date{November 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+A coding agent asks a language model for a program and runs it, usually with a test command
+that the model also writes. Every field of such a reply becomes an action on the host, so one
+injected reply can overwrite a shell startup file and upload a private key. We describe a
+harness that confines these actions. A state machine with 5 states fixes the order of the
+steps and the number of attempts. A reply reaches the host only as a file under a plain name
+and as a check that runs in a throwaway sandbox with a read-only system, no network and no
+secrets. The harness stops if the host cannot create the sandbox. Our implementation, built
+on Linux namespaces with bubblewrap, adds about 15\,ms to a check. None of 12 escape attempts
+left the sandbox. The model still writes its own check, so a passing check is weak evidence
+that the program is correct.
+\end{abstract}
+
+\section{Introduction}
+\label{sec:intro}
+
+SWE-agent runs the tests of a repository, and CodeAct turns every action of an agent into
+Python code \cite{sweagent2024,codeact2024}. In both, text sampled from a model becomes a
+command on a real machine. Srinivasan calls this point the \emph{stochastic-deterministic
+boundary} \cite{sdb2026}.
+
+We study the smallest system of this kind. A \emph{harness} sends a task in plain English to a
+model and asks for a file name, a program, and a shell command that builds and tests the
+program. We call that command the \emph{check}. The harness saves the program, runs the check,
+and sends each failure back to the model, for at most \const{MaxAttempts} attempts.
+\Cref{fig:system} shows one attempt.
+
+\input{figures/system}
+
+A \emph{prompt injection} is an instruction hidden in text that the model reads, such as the
+task or the output of an earlier check. Under such an instruction, a model can return this
+reply, which we follow through the paper.
+\begin{center}
+\begin{tcolorbox}[enhanced,width=\linewidth,colback=codefill,colframe=codefill,boxrule=0pt,arc=4pt,left=6pt,right=6pt,top=4pt,bottom=4pt]
+\scriptsize\ttfamily
+\{"file\_name": {\color{synstring}"../../.bashrc"},\\
+\ "code": {\color{synstring}"curl -s http://attacker.example/x | sh"},\\
+\ "check": {\color{synstring}"cat \textasciitilde/.ssh/id\_ed25519 |}\\
+\ {\color{muted}$\hookrightarrow$}\ \ \ \ \ \ \ {\color{synstring}curl -s -d @- http://attacker.example/key"}\}
+\end{tcolorbox}
+\end{center}
+The file name points two folders up, into the home folder. The check reads the private SSH key
+and sends it to \code{attacker.example}. Our first version accepted both fields.
+
+We implemented the harness in 228 lines of Rust and the sandbox in 101 lines \cite{repo}.
+Procedures follow Cormen et al.\ \cite{cormen2022introduction}, with Rust types on their
+variables, and each one links to the lines that implement it. Our contributions are:
+\begin{itemize}[nosep,leftmargin=*]
+  \item a harness whose steps form a fixed state machine with at most \const{MaxAttempts}
+        requests per task (\cref{sec:harness});
+  \item a threat model that follows each field of a reply to its effect on the host
+        (\cref{sec:threats});
+  \item a sandbox for model-written checks built from Linux namespaces without root, with a
+        rule for file names and a startup probe (\cref{sec:sandbox});
+  \item 12 escape attempts, the time the sandbox adds, and one real task
+        (\cref{sec:evaluation}).
+\end{itemize}
+
+\section{The harness}
+\label{sec:harness}
+
+The instructions at the start of each conversation ask for one fixed reply format, and they
+ask that the program assert its own result, so that a wrong answer fails its own check.
+
+\begin{definition}[Reply]\label{def:reply}
+A \emph{reply} is a JSON object with string fields \code{file\_name}, \code{code} and
+\code{check}: the name of the program file, the whole program, and one shell command that
+builds and runs it.
+\example
+{\small\ttfamily
+\{"file\_name": {\color{synstring}"main.rs"},\\
+\ "code": {\color{synstring}"fn main() \{ ... \}"},\\
+\ "check": {\color{synstring}"rustc main.rs \&\& ./main"}\}}
+\end{definition}
+
+
+\input{figures/harness-procedure}
+
+\Cref{proc:harness} is the loop, and \cref{fig:states} is the same loop as a state machine.
+Lines 1 to 3 run the empty check \code{true} in a sandbox with no program. If that fails, the
+harness stops before its first request, so a broken sandbox never lets a check run outside it,
+and the model never receives a sandbox error as if it were a bug in its program.
+
+\input{figures/states}
+
+\listingcard{main.rs}{93}{105}{lst:run}{The loop of \cref{proc:harness} in Rust. The method of each state returns the next state.}
+
+Lines 4 to 6 set up the conversation, the attempt counter and the state \st{Ask}. Lines 7 to 26
+are one \kw{match} on the state, and each arm ends by setting the next state. \st{Ask} counts
+the attempt (line 10) and sends the conversation (line 11); \proc{Ask} keeps the reply in the
+conversation and returns \st{Check}, or \st{Fix} if the request failed. \st{Check} runs
+\proc{Sandboxed-Check} of \cref{sec:sandbox}, which returns \st{Pass}, or \st{Fix} with the
+failure, either a short message or the exit status and output of the check. \st{Fix} appends the
+failure to the conversation (line 17) and returns to \st{Ask}, or to \st{GiveUp} after the last
+attempt (lines 19 to 21). In Rust (\cref{lst:run}), \ty{State} is an enum with the same 5
+variants, and the compiler rejects a \kw{match} that misses one.
+
+Line 11 is the only request. The counter grows on line 10 right before it, and \st{Fix} returns
+to \st{Ask} only while the counter is below \const{MaxAttempts}. So one task costs at most
+\const{MaxAttempts} requests and as many checks, whatever the model replies. The model decides
+only which transition leaves \st{Check}.
+
+\section{Threat model}
+\label{sec:threats}
+
+The attacker controls the whole text of every reply and can change it on every attempt. We
+trust the harness, the kernel and the toolchain.
+
+\begin{observation}
+The harness chooses every step, so a reply reaches the host in exactly two ways: as the file
+that the harness writes and as the check that it runs. The program runs only inside its check.
+\end{observation}
+
+Our first version left both open. It joined the file name to the working folder with an
+ordinary path join, which keeps every \code{..}. Started in \code{/home/user/harness}, it wrote
+\code{../../.bashrc} to \code{/home/user/.bashrc}. It ran the check with \code{sh -c} under the
+user's own permissions, so \code{cat} could read the key and \code{curl} could send it.
+
+\input{figures/threats}
+
+\Cref{tab:threats} lists each way a reply can act on the host and our defense. The rule for
+file names closes the first row and the sandbox the next four. Five rows stay open
+(\cref{sec:limits}).
+
+\section{The sandbox}
+\label{sec:sandbox}
+
+\subsection{Plain file names}
+
+\begin{definition}[Plain file name]\label{def:plain}
+A file name is \emph{plain} if it is not empty, is neither \code{.} nor \code{..}, and contains
+no slash. A plain name always names a file directly inside the working folder.
+\example \code{main.rs} is plain. \code{../../.bashrc} and \code{/etc/passwd} contain slashes.
+\end{definition}
+
+\input{figures/check-procedure}
+
+Lines 5 to 8 of \cref{proc:check} refuse a reply whose name is not plain before anything is
+written. We compare characters and do not resolve the path, because resolution follows symbolic
+links and depends on the state of the disk at that moment. The rule is enough because nothing
+but the harness writes into \const{WorkDir}, and no check can see that folder, so none can plant
+a link there. On Linux, \code{openat2} with \code{RESOLVE\_BENEATH} enforces a similar rule in
+the kernel \cite{openat2}.
+
+\subsection{The view of a check}
+
+\begin{definition}[View of a check]\label{def:view}
+$\proc{Run-Sandboxed}(\var{check}, \var{program})$ runs \var{check} with \code{sh} in a new
+sandbox that contains only
+\begin{itemize}[nosep,leftmargin=*]
+  \item the system folders and the toolchain, read-only;
+  \item the program, read-only, at \code{/work/}\var{name};
+  \item empty \code{/work} and \code{/tmp} in memory, discarded when the check ends;
+  \item a process table with only the check's own processes;
+  \item a network with only the loopback interface;
+  \item the variables \code{PATH}, \code{HOME}${}={}$\code{/work} and what the toolchain needs.
+\end{itemize}
+\example The check of \cref{def:reply} starts in \code{/work}, reads \code{/work/main.rs} and
+writes the binary into memory.
+\end{definition}
+
+\input{figures/mounts}
+
+\Cref{fig:mounts} shows this view with our paths. No home folder and a cleared environment mean
+no SSH key and no API key to read. A read-only system and a throwaway working folder mean no
+change on the host. A read-only program means the file we keep is the file that passed. No
+network means every connection fails.
+
+If the model retries the hostile reply under the plain name \code{main.sh}, \code{HOME} inside
+the sandbox is \code{/work}, so \code{\textasciitilde/.ssh/id\_ed25519} is
+\code{/work/.ssh/id\_ed25519}, which does not exist. We ran it: \code{cat} printed \code{No such
+file or directory}, and \code{curl} exited with status 6, its code for an unresolvable host.
+
+The rest of \cref{proc:check} is plain. Lines 1 to 4 refuse a reply that is not the JSON of
+\cref{def:reply}, for example one cut off at the model's output limit. Lines 9 and 10 save the
+program, line 12 runs the check, and line 14 returns its exit status and output, with the error
+stream merged in, so compiler messages reach the model.
+
+\subsection{The sandbox on Linux}
+\label{sec:linux}
+
+A \emph{namespace} gives a group of processes its own copy of one kernel resource, such as the
+mounted file systems, the process IDs or the network interfaces \cite{namespaces7}. Mount
+namespaces date from Linux 2.4.19 (2002); user namespaces, finished in Linux 3.8 (2013), let an
+unprivileged user create the other kinds \cite{kerrisk2013namespaces,userns7}. Bubblewrap, the
+sandbox tool behind Flatpak, builds views like \cref{def:view} from them \cite{bubblewrap}.
+
+\input{figures/constants}
+
+\listingcard{sandbox.rs}{61}{86}{lst:command}{\proc{Run-Sandboxed} in Rust. The function collects the arguments of three programs and has no branch.}
+
+We start a check through three standard programs (\cref{lst:command}). GNU \code{timeout} sends
+\code{SIGTERM} after \const{WallSeconds} and \code{SIGKILL} \const{KillAfter} later.
+\code{prlimit} sets the limits of \cref{tab:limits} on every process of the check. \code{bwrap}
+creates new user, mount, PID, network, IPC, UTS and cgroup namespaces and mounts the view. It is
+process 1 of the new PID namespace, so when it exits the kernel ends everything the check
+started. A new session keeps the check from typing into our terminal.
+
+We run bubblewrap as a program rather than creating namespaces from Rust, because the API has
+traps. \code{unshare} with \code{CLONE\_NEWPID} does not move the caller into the new
+namespace; only its later children enter it. A sandbox that missed this would leave the check in
+the host's PID namespace, where \code{kill -9 -1} reaches every process of the user.
+
+Some hosts forbid unprivileged user namespaces. Ubuntu 24.04 does so by default through
+\path{kernel.apparmor_restrict_unprivileged_userns=1}. The probe on lines 1 to 3 of
+\cref{proc:harness} catches this before the first request.
+
+\section{Evaluation}
+\label{sec:evaluation}
+
+We measured on an ARM64 board with Linux 5.15.148, Ubuntu 22.04 and bubblewrap 0.6.1. The
+model, \code{Qwen3.6-35B-A3B}, ran on another machine behind a chat API.
+
+\input{figures/escapes}
+
+\Cref{tab:escapes} lists 12 escape attempts: 5 are unit tests, 7 we ran by hand through the
+same sandbox. None escaped. The 14 unit tests cover 93\% of the lines and all of the sandbox.
+
+The empty check \code{true} took 3\,ms without the sandbox and 18\,ms with it (mean of 150
+runs), so the sandbox costs about 15\,ms. Compiling and running a 144-line Rust program took
+360\,ms without and 365\,ms with (20 runs); the gap is smaller because the sandbox compiles in
+memory. With the plain run also in memory, 349\,ms, the sandbox again adds about 15\,ms, or
+4\%.
+
+On an Ubuntu 24.04 host with the AppArmor setting above, \code{bwrap} failed with
+\code{loopback: Failed RTM\_NEWADDR: Operation not permitted}, and the harness exited before its
+first request.
+
+We also ran one real task, a Rust program that demonstrates \code{std::mem::replace},
+\code{std::mem::take} and the other memory functions of the standard library. The first run
+failed all 5 attempts with \code{EOF while parsing a string}. Every reply had reached the model's
+output limit inside the program, and every retry was as long as the one before, so feedback did
+not help. A later run passed on the first attempt. Its program compiled with a warning, and a
+comment called \code{std::mem::swap} atomic, which is false. The check passed because the
+program tested neither. Feedback repairs only what the model can change in the program, and a
+passing check proves only what the check tests.
+
+\section{Limitations}
+\label{sec:limits}
+
+The model writes its own check, so \code{echo ok} passes. We plan to replace the shell command
+with a typed description of the check, from which the harness builds the command. The model
+would choose what to test, and the harness how to run it.
+
+Check output goes back to the model unchanged, so a program can print instructions for the next
+attempt. We load no seccomp filter \cite{seccomp2}, so every system call a user namespace
+allows, and every kernel bug behind one, stays reachable. We set no process limit, so a fork
+bomb runs until the timeout; a cgroup limit would end it sooner. \code{/work} lives in memory
+with no total size limit; \const{FileSize} caps each file only. We measured on one host.
+
+\section{Related work}
+\label{sec:related}
+
+ReAct, Toolformer, CodeAct and SWE-agent let a model call tools and run code
+\cite{react2023,toolformer2023,codeact2024,sweagent2024}. Our harness is such a loop with fixed
+steps, a bound on attempts and a sandbox around each run. Srinivasan's 6 runtime patterns
+include a shared state machine and a supervisor with a gate \cite{sdb2026}; ours is both, except
+that the model writes the check the gate runs. MetaAgent builds agents as finite state machines
+whose states the system can revisit \cite{metaagent2025}; our 5 states are fixed.
+
+\section{Conclusion}
+
+A fixed state machine leaves the model only the content of each step. A reply then reaches the
+host as a file under a plain name and as a check in a throwaway sandbox, for about 15\,ms per
+check. The model still writes the check.
+
+\bibliographystyle{plainnat}
+\bibliography{refs}
+
+\end{document}

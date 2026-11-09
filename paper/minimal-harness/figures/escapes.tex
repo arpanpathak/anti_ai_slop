@@ -1,0 +1,25 @@
+\begin{table}[!t]
+\centering
+\caption{Escape attempts and observed results. Rows marked T are unit tests, and \code{/home/user} stands for our home folder.}
+\label{tab:escapes}
+\footnotesize
+\renewcommand{\arraystretch}{1.12}
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{3.55cm}>{\raggedright\arraybackslash}p{4.25cm}@{}}
+\toprule
+Check & Result \\
+\midrule
+T: file name \code{../escaped.sh} & Refused before any write. \\
+T: write \code{left.txt} in \code{/work} & Written, and absent from \code{harness\_out} afterward. \\
+T: overwrite the program & \code{Read-only file system}. \\
+T: look for the project's \code{Cargo.toml} and \code{CARGO\_MANIFEST\_DIR} & Neither exists. \\
+T: list the interfaces in \code{/proc/net/dev} & Only \code{lo}. \\
+The hostile check of \cref{sec:intro} & \code{No such file or directory}, and \code{curl} exits with status 6. \\
+\code{cat} \path{/home/user/.ssh/id_ed25519} & \code{No such file or directory}. \\
+\code{curl http://1.1.1.1} & \code{Couldn't connect to server}. \\
+\code{env} & Only \code{HOME}, \code{PATH}, \code{PWD} and \code{RUSTUP\_HOME}. \\
+\code{ps -e}, then \code{kill -9 -1} & 3 processes: \code{bwrap}, \code{sh} and \code{ps}. The signal finds no process. \\
+\code{dd} of 100\,MiB into \code{/work} & \code{File size limit exceeded} at 64\,MiB. \\
+\code{sleep 300} & Ended by \code{timeout} after 120\,s, with status 124. \\
+\bottomrule
+\end{tabular}
+\end{table}

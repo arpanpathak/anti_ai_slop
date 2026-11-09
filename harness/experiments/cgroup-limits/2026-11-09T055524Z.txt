@@ -1,0 +1,8 @@
+experiment: cgroup-limits
+time: 2026-11-09T055524Z
+commit: 3528a56
+kernel: 5.15.148-tegra
+
+attack | sandbox only | sandbox in a cgroup
+processes started, of 500 | 500, exit status: 0, 193 ms | 59, exit status: 0, 82 ms
+MiB in /work, of 360 | 360, exit status: 0, 347 ms | nothing printed, signal: 9 (SIGKILL), 144 ms

@@ -1,14 +1,18 @@
 //! Harness: give it a task in plain English. It asks the model for a program, runs the
-//! check the model names, and sends each failure back until the check passes.
+//! check the model names inside a sandbox, and sends each failure back until the check
+//! passes.
 //!
 //! Usage: API_KEY=... harness write a lock free spsc queue in rust that sums 1 to 100
 
 use anyhow::{Context, Error, Result, bail, ensure};
 use serde::Deserialize;
 use serde_json::{Value, json};
+use std::ffi::OsStr;
 use std::path::Path;
-use std::process::{Command, Output};
+use std::process::Output;
 use std::{env, fs};
+
+mod sandbox;
 
 const URL: &str = "https://arpanpathak.taildb9a39.ts.net/v1/chat/completions";
 const MODEL: &str = "Qwen3.6-35B-A3B-NVFP4";
@@ -53,7 +57,7 @@ struct Answer {
     file_name: String,
     /// The whole program.
     code: String,
-    /// Shell command, run inside `WORK_DIR`, that builds and runs the program.
+    /// Shell command, run in the sandbox next to the program, that builds and runs it.
     check: String,
 }
 
@@ -61,6 +65,7 @@ fn main() -> Result<()> {
     let api_key = env::var("API_KEY").context("set API_KEY")?;
     let task = env::args().skip(1).collect::<Vec<String>>().join(" ");
 
+    sandbox::probe()?;
     fs::create_dir_all(WORK_DIR)?;
     Harness::new(String::from(URL), api_key, task).run()?;
 
@@ -179,29 +184,41 @@ impl Answer {
         serde_json::from_str(answer_json).context("the reply is not the JSON asked for")
     }
 
-    /// Writes the program into `WORK_DIR`.
+    /// Writes the program into `WORK_DIR`. A name with a directory in it could point
+    /// outside `WORK_DIR`, so only a plain file name is accepted.
     fn save(self) -> Result<Self> {
+        let plain_name =
+            Path::new(&self.file_name).file_name() == Some(OsStr::new(&self.file_name));
+        ensure!(
+            plain_name,
+            "file_name must be a plain file name, got {:?}",
+            self.file_name
+        );
+
         fs::write(Path::new(WORK_DIR).join(&self.file_name), &self.code)?;
 
         Ok(self)
     }
 
-    /// Runs the check inside `WORK_DIR`, with its errors merged into its output.
+    /// Runs the check in the sandbox, with its errors merged into its output.
     fn run(self) -> Result<Output> {
-        let check = format!("exec 2>&1; {}", self.check);
+        let script = format!("exec 2>&1; {}", self.check);
+        let program = Path::new(WORK_DIR).join(&self.file_name);
 
-        Ok(Command::new("sh")
-            .args(["-c", &check])
-            .current_dir(WORK_DIR)
-            .output()?)
+        Ok(sandbox::command(&script, &program, &self.file_name)?.output()?)
     }
 }
 
-/// Fails with the check's output when it exits non-zero, prints it otherwise.
+/// Fails with the check's output when it exits non-zero, prints it otherwise. Exit
+/// status 124 means `timeout` stopped the check.
 fn report(output: Output) -> Result<()> {
     let printed = String::from_utf8(output.stdout)?;
+    let status = output.status;
 
-    ensure!(output.status.success(), "the check failed:\n{printed}");
+    ensure!(
+        status.success(),
+        "the check failed with {status}:\n{printed}"
+    );
     println!("{printed}");
 
     Ok(())

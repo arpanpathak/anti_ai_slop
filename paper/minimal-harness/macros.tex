@@ -1,0 +1,174 @@
+% Shared definitions, adapted from the StaleyNET paper.
+
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage[table]{xcolor}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,calc,fit,shadows.blur,backgrounds}
+\usepackage[most]{tcolorbox}
+\usepackage{enumitem}
+\usepackage{microtype}
+\usepackage{xspace}
+
+\definecolor{accent}{HTML}{3B4BA8}
+\definecolor{definitionfill}{HTML}{EEF0FB}
+\definecolor{codefill}{HTML}{F6F7F9}
+\definecolor{rulefill}{HTML}{E7F5EF}
+\definecolor{muted}{HTML}{5F6475}
+
+% Syntax colors for pseudocode.
+\definecolor{synkeyword}{HTML}{3B4BA8}
+\definecolor{synstring}{HTML}{2E7D4F}
+
+% Material tonal containers for figures: a fill and the dark text color of the same hue.
+\definecolor{bluefill}{HTML}{D6E3FF}   \definecolor{blueink}{HTML}{001B3E}
+\definecolor{violetfill}{HTML}{EADDFF} \definecolor{violetink}{HTML}{21005D}
+\definecolor{greenfill}{HTML}{C3EFCB}  \definecolor{greenink}{HTML}{00210B}
+\definecolor{amberfill}{HTML}{FFDDB3}  \definecolor{amberink}{HTML}{2A1700}
+\definecolor{redfill}{HTML}{FFDAD6}    \definecolor{redink}{HTML}{410002}
+\definecolor{grayfill}{HTML}{E9EAF0}   \definecolor{grayink}{HTML}{1B1C21}
+\definecolor{edgeink}{HTML}{44474E}
+
+% Definitions in shaded boxes.
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}[section]
+\tcolorboxenvironment{definition}{colback=definitionfill,colframe=definitionfill,boxrule=0pt,arc=2pt,left=6pt,right=6pt,top=4pt,bottom=4pt}
+
+% The example line inside a definition.
+\newcommand{\example}{\par\smallskip\noindent\textit{Example.}\ }
+
+% A highlighted observation.
+\newtcolorbox{observation}{colback=rulefill,colframe=rulefill,boxrule=0pt,arc=2pt,left=6pt,right=6pt,top=4pt,bottom=4pt,
+  title={\sffamily\bfseries\footnotesize KEY OBSERVATION},coltitle=accent,colbacktitle=rulefill,
+  attach title to upper,after title={\par\smallskip}}
+
+% Pseudocode in the style of Cormen, Leiserson, Rivest and Stein: one
+% statement per numbered line, procedure names in small capitals, and a
+% wider gap after the last line of each group (end such a line with \groupend).
+\newcounter{codeline}
+\ExplSyntaxOn
+\seq_new:N \l__proc_words_seq
+\NewDocumentCommand{\proc}{m}{
+  \textsf{\bfseries
+    \seq_set_split:Nnn \l__proc_words_seq { - } { #1 }
+    \seq_map_indexed_inline:Nn \l__proc_words_seq
+      {
+        \int_compare:nT { ##1 > 1 } { - }
+        \tl_head:n { ##2 }
+        \scalebox{0.8}{ \text_uppercase:n { \tl_tail:n { ##2 } } }
+      }
+  }
+}
+\ExplSyntaxOff
+
+% A procedure in a shaded box. Arguments: the signature, the input in words, the output in
+% words, and the link to the Rust lines that implement it. A procedure is one column wide.
+\newcounter{procnum}
+\newenvironment{procedure}[4]{%
+  \setcounter{codeline}{0}\refstepcounter{procnum}%
+  \begin{tcolorbox}[enhanced,colback=codefill,colframe=codefill,boxrule=0pt,arc=4pt,left=8pt,right=6pt,top=5pt,bottom=4pt]%
+  \small\linespread{1.15}\selectfont\def\procsignature{#1}%
+  \noindent{\sffamily\footnotesize\color{accent}Procedure \theprocnum}\hfill{\footnotesize #4}\par\vspace{2pt}%
+  {\footnotesize\color{muted}\noindent\textit{Input:} #2\par\noindent\textit{Output:} #3\par}\vspace{5pt}%
+  \begin{tabbing}%
+  \hspace*{1.5em}\=\hspace{1.2em}\=\hspace{1.2em}\=\hspace{1.2em}\=\hspace{1.2em}\=\hspace{1.2em}\=\kill
+  \hspace*{1.5em}\procsignature\ \{\\[1pt]}{%
+  \\[1pt]\hspace*{1.5em}\}%
+  \end{tabbing}\end{tcolorbox}}
+\newcommand{\li}{\stepcounter{codeline}\llap{\scriptsize\color{muted}\thecodeline\hspace{0.6em}}\>\>}
+\newcommand{\groupend}{\\[0.6\baselineskip]}
+\newcommand{\kw}[1]{{\color{synkeyword}\textbf{#1}}}
+\newcommand{\cmt}[1]{\hfill{\color{muted}\itshape\footnotesize // #1}}
+\newcommand{\str}[1]{{\color{synstring}\texttt{"#1"}}}
+\newcommand{\var}[1]{\ensuremath{\mathit{#1}}}
+\newcommand{\st}[1]{\textsf{#1}}
+\newcommand{\nil}{\textsc{nil}}
+% A Rust type in a procedure.
+\definecolor{syntype}{HTML}{7B3FA0}
+\newcommand{\ty}[1]{{\color{syntype}\textsf{#1}}}
+
+% Links to exact lines of the harness in the public repository.
+\newcommand{\repo}{https://github.com/arpanpathak/anti_ai_slop}
+\input{commit}
+\newcommand{\srcref}[3]{\href{\repo/blob/\commit/harness/src/#1\#L#2-L#3}{\texttt{#1}:#2--#3}}
+
+% Rust listings with syntax colors.
+\usepackage{listings}
+\definecolor{synmacro}{HTML}{A1520B}
+\lstdefinestyle{rust}{
+  basicstyle=\fontsize{6.5}{7.8}\selectfont\ttfamily,
+  keywords={fn,let,mut,match,loop,enum,impl,struct,self,Self,return,if,pub,const,use,mod},
+  keywordstyle=\color{synkeyword}\bfseries,
+  keywords=[2]{State,Result,Error,Output,Path,Command,OsStr,Answer,Harness,String,Ok,Err,Some},
+  keywordstyle=[2]\color{syntype},
+  keywords=[3]{bail,ensure,format,println,eprintln,json},
+  keywordstyle=[3]\color{synmacro},
+  comment=[l]{//},
+  commentstyle=\color{muted}\itshape,
+  morestring=[b]",
+  stringstyle=\color{synstring},
+  showstringspaces=false,
+  columns=fullflexible,
+  keepspaces=true,
+  numbers=left,
+  numberstyle=\tiny\color{muted},
+  numbersep=5pt,
+  xleftmargin=10pt,
+  breaklines=true,
+  breakindent=1.5em,
+  postbreak=\mbox{{\color{muted}$\hookrightarrow$}\space}
+}
+
+% A one-column listing copied from a source file, with a link to the same lines on GitHub.
+% Arguments: file in harness/src/, first line, last line, label, one-line title.
+\newcounter{listnum}
+\newcommand{\listingcard}[5]{%
+  \begin{procfloat}[!t]%
+  \begin{tcolorbox}[enhanced,colback=codefill,colframe=codefill,boxrule=0pt,arc=4pt,left=6pt,right=6pt,top=5pt,bottom=3pt]%
+  \refstepcounter{listnum}\label{#4}%
+  {\sffamily\footnotesize\color{accent}Listing \thelistnum}\hfill{\footnotesize\srcref{#1}{#2}{#3}}\par
+  {\small #5}\par\vspace{2pt}%
+  \lstinputlisting[style=rust,firstline=#2,lastline=#3,firstnumber=1]{../../harness/src/#1}%
+  \end{tcolorbox}%
+  \end{procfloat}}
+
+% Procedures float in one column, like figures.
+\makeatletter
+\newcommand\fps@procfloat{tbp}
+\newcommand\ftype@procfloat{4}
+\newcommand\ext@procfloat{lop}
+\newenvironment{procfloat}{\@float{procfloat}}{\end@float}
+\makeatother
+
+% Figures: Material cards with tonal fills, no outlines, a soft shadow below each box, and
+% sharp arrowheads. The shadow is offset further down than it is blurred, so it never shows
+% above a box as a ring.
+\tikzset{
+  figure/.style={font=\sffamily\small, >={Stealth[length=2.5mm, width=1.9mm]}, line width=0.75pt},
+  elevated/.style={blur shadow={shadow xshift=0pt, shadow yshift=-1.6pt,
+    shadow blur radius=1.4pt, shadow blur steps=14, shadow opacity=40,
+    shadow blur extra rounding=1.4pt}},
+  block/.style={rounded corners=6pt, draw=none, align=center, inner sep=5pt,
+    minimum height=2.3em, elevated},
+  chip/.style={rounded corners=3pt, draw=none, align=center, inner sep=2pt,
+    font=\sffamily\scriptsize, minimum height=1.55em},
+  region/.style={rounded corners=10pt, inner sep=8pt},
+  region label/.style={font=\sffamily\scriptsize\bfseries, text=edgeink},
+  edge label/.style={font=\sffamily\footnotesize, text=edgeink, align=center},
+  flow/.style={->, draw=edgeink, line cap=butt},
+}
+
+% A figure card: a title and a one-line lede inside the figure, then the drawing.
+\newcommand{\figcard}[3]{%
+  \begin{tcolorbox}[enhanced,colback=white,colframe=white,boxrule=0pt,arc=6pt,left=7pt,right=7pt,top=6pt,bottom=7pt,
+    drop fuzzy midday shadow=black!30]%
+  {\sffamily\bfseries\small #1}\par\vspace{1pt}{\sffamily\footnotesize\color{muted}#2}\par\vspace{7pt}%
+  \centering #3%
+  \end{tcolorbox}}
+
+\newcommand{\code}[1]{\texttt{#1}}
+
+% A named constant in a procedure and in the text.
+\newcommand{\const}[1]{\textsf{#1}}

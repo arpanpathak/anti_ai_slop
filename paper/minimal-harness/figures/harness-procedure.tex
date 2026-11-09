@@ -1,0 +1,34 @@
+\begin{procfloat}[!t]
+\begin{procedure}{\proc{Harness}$(\var{task}\colon$ \ty{String}$)\ \rightarrow$ \ty{Result}\label{proc:harness}}
+{a task in plain English.}
+{\code{Ok} with the reply whose check passed, or \code{Err} after \const{MaxAttempts} failed attempts.\par\noindent
+\textit{Types:} \ty{State} $=$ \st{Ask} $\mid$ \st{Check}(\ty{String}) $\mid$ \st{Fix}(\ty{Error}) $\mid$ \st{Pass} $\mid$ \st{GiveUp}.}
+{\srcref{main.rs}{64}{151}}
+\li \kw{if} \proc{Run-Sandboxed}$(\str{true}, \nil)$ \kw{is} \code{Err}$(\var{error})$ \{ \\
+\li \> \kw{return} \code{Err}$(\var{error})$ \cmt{no sandbox on this host} \\
+\li \} \groupend
+\li $\var{conversation}\colon$ \ty{Conversation} $= \langle \const{Instructions}, \var{task} \rangle$ \\
+\li $\var{attempt}\colon$ \ty{u32} $= 0$ \\
+\li $\var{state}\colon$ \ty{State} $=$ \st{Ask} \groupend
+\li \kw{loop} \{ \\
+\li \> \kw{match} $\var{state}$ \{ \\
+\li \> \> \st{Ask} $\Rightarrow$ \{ \\
+\li \> \> \> $\var{attempt} = \var{attempt} + 1$ \\
+\li \> \> \> $\var{state} = \proc{Ask}(\var{conversation})$ \\
+\li \> \> \} \groupend
+\li \> \> \st{Check}$(\var{reply})$ $\Rightarrow$ \{ \\
+\li \> \> \> $\var{state} = \proc{Sandboxed-Check}(\var{reply})$ \\
+\li \> \> \} \groupend
+\li \> \> \st{Fix}$(\var{failure})$ $\Rightarrow$ \{ \\
+\li \> \> \> append $\var{failure}$ to $\var{conversation}$ \\
+\li \> \> \> $\var{state} =$ \st{Ask} \groupend
+\li \> \> \> \kw{if} $\var{attempt} = \const{MaxAttempts}$ \{ \\
+\li \> \> \> \> $\var{state} =$ \st{GiveUp} \\
+\li \> \> \> \} \\
+\li \> \> \} \groupend
+\li \> \> \st{Pass} $\Rightarrow$ \kw{return} \code{Ok}$(\var{reply})$ \groupend
+\li \> \> \st{GiveUp} $\Rightarrow$ \kw{return} \code{Err}$(\str{no passing program})$ \\
+\li \> \} \\
+\li \}
+\end{procedure}
+\end{procfloat}

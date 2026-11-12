@@ -1,6 +1,6 @@
 ---
 name: anti-ai-slop-writing-for-neurodivergent
-description: Stop LLM "AI slop" in any prose meant for people - book chapters, tutorials, docs, READMEs, PR/issue/commit text, chat answers. Load it BEFORE writing or revising explanatory prose, before delegating writing to agents, and when reviewing text an agent produced. Clear, warm, concrete writing for readers with ADHD and other neurodivergent readers. Covers who acts in a sentence, the Never list, voice, numbers, punctuation, explanation depth, code in prose, accuracy, non-book text, process discipline, and a sentence-level audit script.
+description: Stop LLM "AI slop" in any prose meant for people - book chapters, tutorials, docs, READMEs, PR/issue/commit text, chat answers. Load it BEFORE writing or revising explanatory prose, before delegating writing to agents, and when reviewing text an agent produced. Clear, warm, concrete writing for readers with ADHD and other neurodivergent readers. Covers who acts in a sentence, the Never list, voice, numbers, punctuation, explanation depth, code in prose, accuracy, non-book text, agent-log voice in READMEs and PRs, process discipline, and a sentence-level audit script.
 ---
 
 # Anti-AI-slop writing for neurodivergent readers
@@ -378,7 +378,46 @@ Group algorithms into families that span chapters (elementwise and reduction, ma
 multiplication, stencils, scan-based, normalization). The figure, pseudocode and formula rules
 are in the `book-figures-pseudocode-formulas` skill.
 
-## 16. The author's note to readers and fellow writers
+## 16. Agent-log voice: writing from the transcript
+
+An agent writes right after a run of tool calls, so its context is a log of events. Text written
+from that context is in past tense and first person, carries dates, and puts a caveat on every
+claim. The author rejected README and PR text written this way as "event commentary" and
+"retrofitted slop". An engineer writes from a model of the system, not from a session.
+
+How it happens:
+
+- Sentences follow the order of events (ran, measured, failed, patched) instead of how the
+  subject is organized.
+- Provenance sits inside every sentence: "measured on 2026-11-11", "except the two baselines",
+  "not run yet". Each one is accurate; together they read as an audit trail.
+- After one overclaim, every statement gets a guard clause.
+- Past tense, events and timestamps appear where a document needs present tense.
+- New sentences are appended to an outdated opening instead of rewriting the document.
+
+Rules:
+
+- Describe the system, not the work on it. Use present tense and organize by topic.
+- Put dates, measurement conditions and status in a table column or a notes section.
+- Rewrite a document from what the product is now. Do not append to an old framing.
+- READMEs and PRs read like a platform engineer wrote them. A README opens with one line that says
+  what the product is, then feature bullets. A PR body is a title line and an imperative change
+  list ("Rewrite intro", "Add engine logos"). Book chapters keep the voice of Sections 4 to 7.
+- A direct status answer to the author may report events. Keep it short.
+- Before showing a document, read it as someone who never saw the session. Delete everything that
+  needs the transcript to make sense.
+
+Rejected and accepted:
+
+| Rejected | Accepted |
+|---|---|
+| "Local language models write slop. … This project teaches a model that runs on an NVIDIA Jetson to stop." | "Fullstack private LLM cloud platform for edge hardware: multi-engine model serving, an API gateway, coding agents and evaluation." |
+| "One server, `thor-tigress-agent`, sits in front of every engine and offers OpenAI's and Anthropic's APIs." | "API: OpenAI `/v1/chat/completions` and Anthropic `/v1/messages`, routed by model name." |
+| "Since October 2026, the Thor has run 10 models from Google, Alibaba and NVIDIA on these engines, from 12B to 74B parameters." | "Models: Gemma 4 26B-A4B, 12B and 31B; Qwen3.6 35B-A3B and 27B; …" with speeds in a table |
+| "The platform also measures how the models write." | "Eval: `spark` scores model output for prose and code quality." |
+| "The README commit that missed #19, which was merged before it was pushed." | "Update README for multi-engine serving." followed by "- Rewrite intro" |
+
+## 17. The author's note to readers and fellow writers
 
 Keep this note verbatim when the author asks to include it.
 

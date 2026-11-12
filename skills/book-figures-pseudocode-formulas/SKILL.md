@@ -61,6 +61,14 @@ Each rule records one of those rejections.
   `Symbol | Meaning | In the example` table when a formula has more than 2 symbols.
 - **Escape for mdBook.** In Markdown, MathJax delimiters are `\\(…\\)`, and a thin space is
   `\\,`. A single `\,` renders as a comma.
+- **Markdown breaks formulas in 3 more ways.** 2 `_` in one paragraph pair as italics and break
+  every formula between them: write `\_` (Chapters 16, 19 and 21 broke this way). A line inside
+  a formula that starts with `+`, `-` or `1.` becomes a list item, and a line holding only `=`
+  makes a heading: keep operators at the end of a line. Raw HTML (`<p>`, `<li>`,
+  `<figcaption>`) is not Markdown, so it takes single backslashes, `\(…\)`.
+- **Find broken formulas after a build:** load each page in a headless browser, wait for MathJax,
+  and search the text outside `pre`, `code` and `script` for `\(`, `\[` or `merror`. A rendered
+  formula leaves none of them.
 - **Notation matches the pseudocode.** If the pseudocode says `row` and `col`, the formula
   does not switch to `r` and `c` without saying so.
 

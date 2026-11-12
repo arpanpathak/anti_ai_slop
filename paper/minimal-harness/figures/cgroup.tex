@@ -1,0 +1,16 @@
+\begin{table}[!t]
+\centering
+\caption{Two checks that stay within every per-process limit, run in the sandbox alone and in
+the same sandbox inside a cgroup of 64 tasks and 128\,MiB with no swap.}
+\label{tab:cgroup}
+\footnotesize
+\renewcommand{\arraystretch}{1.12}
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{2.5cm}>{\raggedright\arraybackslash}p{2.2cm}>{\raggedright\arraybackslash}p{2.75cm}@{}}
+\toprule
+Check & Sandbox & Sandbox in a cgroup \\
+\midrule
+Start 500 sleeping processes & 500 started & 59 started \\
+Write 6 files of 60\,MiB to \code{/work} & 360\,MiB held in memory & Stopped by \code{SIGKILL} after 144\,ms \\
+\bottomrule
+\end{tabular}
+\end{table}

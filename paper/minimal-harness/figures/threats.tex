@@ -13,8 +13,8 @@ A check that reads the home folder or the API key & Neither exists in the sandbo
 A check that sends data over the network & Only a loopback interface exists. \\
 A check that changes host files or leaves a link for a later write & A read-only system, and a working folder that disappears with each check. \\
 A check that runs forever or uses too much memory & Limits on time, memory, file size and open files (\cref{tab:limits}). \\
-A check that fills memory with many files & Open. The size of \code{/work} has no limit. \\
-A check that starts processes in a loop & Open. Only the timeout ends it. \\
+A check that fills memory with many files & Open in the harness. A cgroup stops it (\cref{tab:cgroup}). \\
+A check that starts processes in a loop & Open in the harness. A cgroup stops it (\cref{tab:cgroup}). \\
 A check that uses a kernel bug & Open. We load no seccomp filter. \\
 Output that carries instructions to the model & Open. We return its output unchanged. \\
 A check that tests nothing & Open. A model writes its own check. \\
